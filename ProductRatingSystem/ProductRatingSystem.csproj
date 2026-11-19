@@ -10,7 +10,16 @@
 
   <ItemGroup>
     <Folder Include="Control\" />
-    <Folder Include="Boundary\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Images\*.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.23" />
   </ItemGroup>
 
 </Project>
