@@ -11,13 +11,12 @@ namespace ProductRatingSystem.Control
     //               uses DBConnectorControl to save the rating, read the
     //               ReviewList, store the new overall rating and reload the
     //               customer's ProductList.
-    public class RateProductControl
+    public class RateProductControl : Controller
     {
         private int userID;
         private int productID;
 
         // Extra helper fields (not in the class diagram).
-        private DBConnectorControl db;
         private RatingForm ratingForm;
         private Action<ProductList> showProducts;
         private string errorMessage;
@@ -33,7 +32,6 @@ namespace ProductRatingSystem.Control
         {
             userID = 0;
             productID = 0;
-            db = new DBConnectorControl();
             showProducts = mshowProducts;
             errorMessage = "";
         }

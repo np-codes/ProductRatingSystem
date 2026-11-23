@@ -9,7 +9,7 @@ namespace ProductRatingSystem.Boundary
     // Subsystem: Boundary
     // Associations: StartupForm calls StartupControl.initiate() when the
     //               Startup button is clicked.
-    public partial class StartupForm : Form
+    public partial class StartupForm : ApplicationForm
     {
         // Showcase content: fixed on purpose, the database is not
         // initialized until the Startup button is clicked.
@@ -20,6 +20,7 @@ namespace ProductRatingSystem.Boundary
         public StartupForm()
         {
             InitializeComponent();
+            UiTheme.StylePrimaryButton(startupButton);
 
             showProduct(product1Picture, product1Stars, "product1.png", showcaseRating1);
             showProduct(product2Picture, product2Stars, "product2.png", showcaseRating2);

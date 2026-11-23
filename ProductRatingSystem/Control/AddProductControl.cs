@@ -11,12 +11,11 @@ namespace ProductRatingSystem.Control
     // Associations: AddProductControl creates and controls the AddProductForm,
     //               validates the Product it receives, and uses DBConnectorControl
     //               to save it and to reload the seller's ProductList.
-    public class AddProductControl
+    public class AddProductControl : Controller
     {
         private int userID;
 
         // Extra helper fields (not in the class diagram).
-        private DBConnectorControl db;
         private AddProductForm addProductForm;
         private Action<ProductList> showProducts;
         private string errorMessage;
@@ -31,7 +30,6 @@ namespace ProductRatingSystem.Control
         public AddProductControl(Action<ProductList> mshowProducts)
         {
             userID = 0;
-            db = new DBConnectorControl();
             showProducts = mshowProducts;
             errorMessage = "";
         }

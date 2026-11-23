@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
+using ProductRatingSystem.Boundary;
 
 namespace ProductRatingSystem.Control
 {
     // Subsystem: Control
     // Associations: StartupControl uses DBConnectorControl to prepare the
     //               database and (later) creates the LoginForm.
-    public class StartupControl
+    public class StartupControl : Controller
     {
         private string configFile;
         private Dictionary<string, string> settings;
@@ -28,15 +29,10 @@ namespace ProductRatingSystem.Control
         {
             loadConfiguration();
 
-            DBConnectorControl db = new DBConnectorControl();
             db.initializeDB();
 
-            // TODO (Member 2): once LoginForm exists, replace the next two lines with
-            //     LoginForm loginForm = new LoginForm();
-            //     loginForm.display();
-            // and add "using ProductRatingSystem.Boundary;" at the top of this file.
-            Form1 loginForm = new Form1();
-            loginForm.Show();
+            LoginForm loginForm = new LoginForm();
+            loginForm.display();
         }
 
         // Reads simple "key=value" lines from config.txt. A missing or

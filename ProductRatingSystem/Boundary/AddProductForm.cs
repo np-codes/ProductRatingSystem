@@ -13,7 +13,7 @@ namespace ProductRatingSystem.Boundary
     // cancelled until a valid product has been submitted (RAD 1.1).
     // Associations: created and controlled by AddProductControl; creates the
     //               Product that is passed to AddProductControl.submit().
-    public partial class AddProductForm : Form
+    public partial class AddProductForm : ApplicationForm
     {
         private string title;
         private string image;
@@ -27,6 +27,8 @@ namespace ProductRatingSystem.Boundary
         public AddProductForm(AddProductControl mcontrol)
         {
             InitializeComponent();
+            UiTheme.StylePrimaryButton(submitButton);
+            UiTheme.StyleSecondaryButton(chooseImageButton);
             addProductControl = mcontrol;
             title = "";
             image = "";
