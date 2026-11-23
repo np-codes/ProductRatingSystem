@@ -46,9 +46,9 @@ namespace ProductRatingSystem.Boundary
             UiTheme.StyleSecondaryButton(reviewsButton);
             reviewList = mreviews != null ? mreviews : new ReviewList(new ProductRating[0]);
 
-            ratingLabel.Text = "Overall Rating: " + formatRating(product.getOverallRating())
-                + "   " + stars(product.getOverallRating());
-            ratingLabel.Visible = true;
+            ratingLabel.Text = "Overall Rating: " + formatRating(product.getOverallRating());
+            starsLabel.Text = stars(product.getOverallRating());
+            ratingPanel.Visible = true;
             rateButton.Visible = false;
             reviewsButton.Visible = true;
 
@@ -62,7 +62,7 @@ namespace ProductRatingSystem.Boundary
             showProduct(mproduct);
             UiTheme.StylePrimaryButton(rateButton);
 
-            ratingLabel.Visible = false;
+            ratingPanel.Visible = false;
             rateButton.Visible = true;
             reviewsButton.Visible = false;
             reviewsPanel.Visible = false;

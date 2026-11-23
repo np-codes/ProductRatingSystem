@@ -356,6 +356,10 @@ namespace ProductRatingSystem.Control
         {
             insertAccount(connection, transaction, "customer1", "pass123", "Customer");
             insertAccount(connection, transaction, "seller1", "pass123", "Seller");
+            insertAccount(connection, transaction, "customer2", "pass123", "Customer");
+            insertAccount(connection, transaction, "seller2", "pass123", "Seller");
+            insertAccount(connection, transaction, "customer3", "pass123", "Customer");
+            insertAccount(connection, transaction, "seller3", "pass123", "Seller");
 
             long sellerID = 0;
             using (SqliteCommand command = connection.CreateCommand())
