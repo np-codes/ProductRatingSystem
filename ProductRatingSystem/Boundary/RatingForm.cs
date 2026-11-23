@@ -13,7 +13,7 @@ namespace ProductRatingSystem.Boundary
     // been submitted (RAD 1.1).
     // Associations: created and controlled by RateProductControl; shows the
     //               ProductRating it receives in display().
-    public partial class RatingForm : Form
+    public partial class RatingForm : ApplicationForm
     {
         private ProductRating productRating;
         private int rating;
@@ -28,6 +28,7 @@ namespace ProductRatingSystem.Boundary
         public RatingForm(RateProductControl mcontrol, Product mproduct)
         {
             InitializeComponent();
+            UiTheme.StylePrimaryButton(submitButton);
             rateProductControl = mcontrol;
             product = mproduct;
             productRating = null;
