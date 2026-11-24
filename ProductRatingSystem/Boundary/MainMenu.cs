@@ -145,7 +145,7 @@ namespace ProductRatingSystem.Boundary
         }
 
         // Heading box under the header: a white box with a thin border. The page
-        // title is on the left ("My Products", "Available Products") and the
+        // title is on the left ("My Products", "Unreviewed Product List") and the
         // product count on the right.
         protected Panel createHeading(string mtext)
         {

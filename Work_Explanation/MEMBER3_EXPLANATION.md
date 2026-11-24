@@ -52,11 +52,11 @@ scroll bar (see 3.7).
 | Member | In RAD? | What it does |
 |---|---|---|
 | `-userID:int` | yes | The logged-in seller. |
-| `AddProductControl(Action<ProductList> mshowProducts)` | constructor | `mshowProducts` is called with the refreshed product list after saving. The SellerMenu uses it to show the Seller Page again (see section 5). |
+| `AddProductControl(Action<ProductList, Dictionary<int, ReviewList>> mshowProducts)` | constructor | `mshowProducts` is called with the refreshed product list and the reviews of those products after saving. The SellerMenu uses it to show the Seller Page again (see section 5). |
 | `+addProduct(int):void` | yes | Stores the seller's ID, creates the `AddProductForm` and calls `display()`. |
-| `+submit(Product):void` | yes | Calls `validate`. If it fails: `displayError(...)` and the page stays open. If it passes: copies the picture (see below), `db.saveProduct(userID, product)`, `close()` the page, `db.getProducts(userID)`, then calls `mshowProducts(productList)`. |
+| `+submit(Product):void` | yes | Calls `validate`. If it fails: `displayError(...)` and the page stays open. If it passes: copies the picture (see below), `db.saveProduct(userID, product)`, `close()` the page, `db.getProducts(userID)`, reads the reviews of those products (`loadReviews`), then calls `mshowProducts(productList, reviews)`. If saving fails, the page stays open with "The product could not be saved. Please try again." (no technical details). |
 | `-validate(Product):bool` | yes | Checks every field. Error messages start with the field name (RAD 2.2 Usability). |
-| `-isImageFile`, `-storeImage` | helpers | Image checks; copying the picture. |
+| `-isImageFile`, `-storeImage`, `-loadReviews` | helpers | Image checks; copying the picture; reading the reviews of every product for the Seller Page (the menu never reads the database). |
 
 **Validation rules**
 
@@ -82,13 +82,14 @@ don't exist, so they show a light-grey placeholder instead of an error.
 | `+rateProduct(int, int):void` | yes | `db.getRatings(productID)` → blank `ProductRating`. Finds the `Product` in `db.getProducts(userID)` (the page has to show title, image, description and price). Creates the `RatingForm` and calls `display(productRating)`. |
 | `+submit(int, string):void` | yes | `validate` → `db.saveReview(userID, productID, rating, review, DateTime.Now)` → `db.getReviews(productID)` → `calculateAverage` → `db.updateRating(productID, average)` → `close()` → `db.getProducts(userID)` → `mshowProducts(productList)`. This is the same order as Figure 2.5.6. |
 | `-validate(int, string):bool` | yes | Rating 1–5 (`Rating:`); review not blank, at most 1000 characters, no control characters (`Review:`). |
-| `-calculateAverage(ReviewList):double` | yes | Average of all ratings, rounded to 2 decimals; 0 when there are none. |
+| `-calculateAverage(ReviewList):double` | yes | The exact average of all ratings (not rounded); 0 when there are none. The pages show it with one decimal. |
 | `-findProduct` | helper | Finds a product by ID in a `ProductList`. |
 | `maxReviewLength` | constant | 1000; `RatingForm` uses it too. |
 
-If saving the rating fails, the page stays open with the error. If the rating was saved but
-updating the average fails, a warning is shown and the page closes anyway, so the same rating
-can't be submitted twice.
+If saving the rating fails, the page stays open with "The rating could not be saved. Please try
+again." If the rating was saved but updating the average fails, a warning is shown and the page
+closes anyway, so the same rating can't be submitted twice. Technical error details are never
+shown to the user.
 
 ### 3.3 `AddProductForm` (Boundary)
 
@@ -179,18 +180,19 @@ Message boxes and the file dialog are drawn by Windows and scale by themselves.
 ```
 AddProduct (Seller)
 SellerMenu.addProduct()
-  └─ new AddProductControl(list => display(list, username)).addProduct(userID)
+  └─ new AddProductControl((list, reviews) => { setReviews(reviews); display(list, username); })
+         .addProduct(userID)
        ├─ new AddProductForm(this).display()          (modal)
        │     Seller fills in, presses Submit
        │     AddProductForm.submit() → new Product(...) → control.submit(product)
        ├─ validate(product)   ── fails → form.displayError("Price: ...")  (page stays open)
        ├─ storeImage + db.saveProduct(userID, product)
        ├─ form.close()
-       ├─ db.getProducts(userID)
-       └─ showProducts(productList)  → SellerMenu.display(productList, username)
+       ├─ db.getProducts(userID) + db.getReviews(...) for each product (loadReviews)
+       └─ showProducts(productList, reviews)  → SellerMenu.setReviews + display(productList, username)
 
 RateProduct (Customer)
-CustomerMenu.selectProduct() + rateProduct()
+CustomerMenu: Rate Product pressed → selectProduct() + rateProduct()
   └─ new RateProductControl(list => display(list)).rateProduct(userID, selectedProductID)
        ├─ db.getRatings(productID)        → blank ProductRating
        ├─ db.getProducts(userID)          → find the Product to show
@@ -216,52 +218,33 @@ could be built before the menus existed). This is how the menus use them:
 
 **SellerMenu**
 ```csharp
-using ProductRatingSystem.Control;
-using ProductRatingSystem.Entity;
-
 public void addProduct()
 {
-    AddProductControl control = new AddProductControl(productList => display(productList, username));
+    AddProductControl control = new AddProductControl(
+        (productList, productReviews) =>
+        {
+            setReviews(productReviews);
+            display(productList, getUsername());
+        });
     control.addProduct(userID);
 }
-
-public void display(ProductList mproductList, string musername)
-{
-    // productPanel: a FlowLayoutPanel (TopDown, AutoScroll, WrapContents = false) on the form.
-    // Once, e.g. in the constructor:
-    //     ProductCard.keepCentered(productPanel, ProductCard.defaultMaximumCardWidth);
-    productPanel.Controls.Clear();
-    DBConnectorControl db = new DBConnectorControl();
-    for (int i = 0; i < mproductList.getCount(); i++)
-    {
-        Product product = mproductList.getProduct(i);
-        ProductCard card = new ProductCard();
-        card.displaySeller(product, db.getReviews(product.getProductID()));
-        productPanel.Controls.Add(card);
-    }
-    // ... set the username label, then Show() if not already visible
-}
 ```
+`display(productList, username)` draws one `ProductCard` per product with
+`card.displaySeller(product, reviews)`, using the reviews it was given with `setReviews()`. The
+menu never reads the database itself: `LoginControl` (after login) and `AddProductControl` (after
+a new product) read the reviews and hand them over.
 
 **CustomerMenu**
 ```csharp
-public void display(ProductList mproductList)
+// in display(): one card per unreviewed product
+ProductCard card = new ProductCard();
+card.displayCustomer(mproductList.getProduct(i));
+card.rateProductClicked += (sender, e) =>
 {
-    productPanel.Controls.Clear();
-    for (int i = 0; i < mproductList.getCount(); i++)
-    {
-        ProductCard card = new ProductCard();
-        card.displayCustomer(mproductList.getProduct(i));
-        card.rateProductClicked += (sender, e) =>
-        {
-            selectedProductID = ((ProductCard)sender).getProductID();   // selectProduct()
-            rateProduct();
-        };
-        productPanel.Controls.Add(card);
-    }
-    countLabel.Text = "Count: " + mproductList.getCount();
-    // ... Show() if not already visible
-}
+    clickedProductID = ((ProductCard)sender).getProductID();
+    selectProduct();      // RAD Figure 2.5.6: selectedProductID = clickedProductID
+    rateProduct();
+};
 
 public void rateProduct()
 {
@@ -269,6 +252,7 @@ public void rateProduct()
     control.rateProduct(userID, selectedProductID);
 }
 ```
+The Customer Page heading is "Unreviewed Product List" with the count on the right (RAD Figure 3.3.1).
 
 The menus get the logged-in `userID` (and the seller's `username`) from login. Both menus call
 `ProductCard.keepCentered(productPanel, ProductCard.defaultMaximumCardWidth);` once in their

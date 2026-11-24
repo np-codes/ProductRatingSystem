@@ -395,7 +395,7 @@ reads the database: the control that opens it hands over the reviews.
 | `addProduct()` | `new AddProductControl((list, reviews) => { setReviews(reviews); display(list, getUsername()); }).addProduct(userID)`. |
 
 ### `CustomerMenu : MainMenu` – Customer page
-Header `[Logout]`, heading "Available Products", list of cards with **Rate Product** buttons.
+Header `[Logout]`, heading "Unreviewed Product List" (RAD Figure 3.3.1), list of cards with **Rate Product** buttons.
 
 | Method | Description |
 |---|---|

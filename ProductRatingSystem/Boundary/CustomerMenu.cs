@@ -33,7 +33,7 @@ namespace ProductRatingSystem.Boundary
 
             // Header: user name on the left, [Logout] on the right.
             Panel header = createHeader();
-            Panel heading = createHeading("Available Products");
+            Panel heading = createHeading("Unreviewed Product List");
 
             // Docking is applied from the last added control: header first (top),
             // then the heading bar (title left, count right); the list fills the rest.
