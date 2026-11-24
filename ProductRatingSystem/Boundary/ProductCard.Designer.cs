@@ -123,12 +123,13 @@ namespace ProductRatingSystem.Boundary
             // starsLabel (stars, right side with space on the right)
             //
             starsLabel.BackColor = System.Drawing.Color.White;
+            starsLabel.AutoSize = true;
             starsLabel.Dock = System.Windows.Forms.DockStyle.Right;
             starsLabel.Font = new System.Drawing.Font("Segoe UI Symbol", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             starsLabel.ForeColor = System.Drawing.Color.Black;
             starsLabel.Name = "starsLabel";
             starsLabel.Padding = new System.Windows.Forms.Padding(0, 0, 10, 0);
-            starsLabel.Size = new System.Drawing.Size(110, 26);
+            starsLabel.MinimumSize = new System.Drawing.Size(110, 0);
             starsLabel.TabIndex = 1;
             starsLabel.Text = "☆☆☆☆☆";
             starsLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;

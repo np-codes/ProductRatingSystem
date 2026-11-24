@@ -43,6 +43,8 @@ namespace ProductRatingSystem.Boundary
             product3Stars = new System.Windows.Forms.Label();
             product3Picture = new System.Windows.Forms.PictureBox();
             startupButton = new System.Windows.Forms.Button();
+            layoutTable = new System.Windows.Forms.TableLayoutPanel();
+            cardsPanel = new System.Windows.Forms.FlowLayoutPanel();
             card1Border.SuspendLayout();
             card1Body.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)product1Picture).BeginInit();
@@ -52,6 +54,8 @@ namespace ProductRatingSystem.Boundary
             card3Border.SuspendLayout();
             card3Body.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)product3Picture).BeginInit();
+            layoutTable.SuspendLayout();
+            cardsPanel.SuspendLayout();
             SuspendLayout();
             //
             // titleLabel
@@ -59,7 +63,8 @@ namespace ProductRatingSystem.Boundary
             titleLabel.BackColor = System.Drawing.Color.White;
             titleLabel.Font = new System.Drawing.Font("Times New Roman", 40F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 0);
             titleLabel.ForeColor = System.Drawing.Color.Black;
-            titleLabel.Location = new System.Drawing.Point(0, 55);
+            titleLabel.Anchor = System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            titleLabel.Margin = new System.Windows.Forms.Padding(0, 55, 0, 0);
             titleLabel.Name = "titleLabel";
             titleLabel.Size = new System.Drawing.Size(600, 140);
             titleLabel.TabIndex = 0;
@@ -71,7 +76,8 @@ namespace ProductRatingSystem.Boundary
             subtitleLabel.BackColor = System.Drawing.Color.White;
             subtitleLabel.Font = new System.Drawing.Font("Segoe UI", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             subtitleLabel.ForeColor = System.Drawing.Color.Black;
-            subtitleLabel.Location = new System.Drawing.Point(0, 212);
+            subtitleLabel.Anchor = System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            subtitleLabel.Margin = new System.Windows.Forms.Padding(0, 17, 0, 0);
             subtitleLabel.Name = "subtitleLabel";
             subtitleLabel.Size = new System.Drawing.Size(600, 85);
             subtitleLabel.TabIndex = 1;
@@ -82,7 +88,7 @@ namespace ProductRatingSystem.Boundary
             //
             card1Border.BackColor = System.Drawing.Color.Gainsboro;
             card1Border.Controls.Add(card1Body);
-            card1Border.Location = new System.Drawing.Point(30, 330);
+            card1Border.Margin = new System.Windows.Forms.Padding(0, 0, 15, 0);
             card1Border.Name = "card1Border";
             card1Border.Padding = new System.Windows.Forms.Padding(1);
             card1Border.Size = new System.Drawing.Size(170, 225);
@@ -126,7 +132,7 @@ namespace ProductRatingSystem.Boundary
             //
             card2Border.BackColor = System.Drawing.Color.Gainsboro;
             card2Border.Controls.Add(card2Body);
-            card2Border.Location = new System.Drawing.Point(215, 330);
+            card2Border.Margin = new System.Windows.Forms.Padding(0, 0, 15, 0);
             card2Border.Name = "card2Border";
             card2Border.Padding = new System.Windows.Forms.Padding(1);
             card2Border.Size = new System.Drawing.Size(170, 225);
@@ -170,7 +176,7 @@ namespace ProductRatingSystem.Boundary
             //
             card3Border.BackColor = System.Drawing.Color.Gainsboro;
             card3Border.Controls.Add(card3Body);
-            card3Border.Location = new System.Drawing.Point(400, 330);
+            card3Border.Margin = new System.Windows.Forms.Padding(0);
             card3Border.Name = "card3Border";
             card3Border.Padding = new System.Windows.Forms.Padding(1);
             card3Border.Size = new System.Drawing.Size(170, 225);
@@ -215,26 +221,56 @@ namespace ProductRatingSystem.Boundary
             startupButton.BackColor = System.Drawing.Color.White;
             startupButton.Font = new System.Drawing.Font("Times New Roman", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 0);
             startupButton.ForeColor = System.Drawing.Color.Black;
-            startupButton.Location = new System.Drawing.Point(220, 620);
+            startupButton.Anchor = System.Windows.Forms.AnchorStyles.None;
+            startupButton.AutoSize = true;
+            startupButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowOnly;
+            startupButton.Margin = new System.Windows.Forms.Padding(0, 65, 0, 0);
+            startupButton.MinimumSize = new System.Drawing.Size(160, 50);
             startupButton.Name = "startupButton";
-            startupButton.Size = new System.Drawing.Size(160, 50);
             startupButton.TabIndex = 5;
             startupButton.Text = "Startup";
             startupButton.UseVisualStyleBackColor = false;
             startupButton.Click += startupButton_Click;
             //
+            // cardsPanel (the three showcase cards side by side)
+            //
+            cardsPanel.Anchor = System.Windows.Forms.AnchorStyles.None;
+            cardsPanel.AutoSize = true;
+            cardsPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            cardsPanel.Controls.Add(card1Border);
+            cardsPanel.Controls.Add(card2Border);
+            cardsPanel.Controls.Add(card3Border);
+            cardsPanel.Margin = new System.Windows.Forms.Padding(0, 33, 0, 0);
+            cardsPanel.Name = "cardsPanel";
+            cardsPanel.WrapContents = false;
+            //
+            // layoutTable (stacks title, subtitle, cards and button; rows grow with their content)
+            //
+            layoutTable.AutoSize = true;
+            layoutTable.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            layoutTable.ColumnCount = 1;
+            layoutTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            layoutTable.Controls.Add(titleLabel, 0, 0);
+            layoutTable.Controls.Add(subtitleLabel, 0, 1);
+            layoutTable.Controls.Add(cardsPanel, 0, 2);
+            layoutTable.Controls.Add(startupButton, 0, 3);
+            layoutTable.Dock = System.Windows.Forms.DockStyle.Top;
+            layoutTable.Name = "layoutTable";
+            layoutTable.RowCount = 4;
+            layoutTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            layoutTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            layoutTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            layoutTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
+            layoutTable.TabIndex = 0;
+            //
             // StartupForm
             //
             AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
+            AutoScroll = true;
             BackColor = System.Drawing.Color.White;
             ClientSize = new System.Drawing.Size(600, 780);
-            Controls.Add(startupButton);
-            Controls.Add(card3Border);
-            Controls.Add(card2Border);
-            Controls.Add(card1Border);
-            Controls.Add(subtitleLabel);
-            Controls.Add(titleLabel);
+            Controls.Add(layoutTable);
             ForeColor = System.Drawing.Color.Black;
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             MaximizeBox = false;
@@ -250,11 +286,16 @@ namespace ProductRatingSystem.Boundary
             card3Border.ResumeLayout(false);
             card3Body.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)product3Picture).EndInit();
+            cardsPanel.ResumeLayout(false);
+            layoutTable.ResumeLayout(false);
+            layoutTable.PerformLayout();
             ResumeLayout(false);
         }
 
         #endregion
 
+        private System.Windows.Forms.TableLayoutPanel layoutTable;
+        private System.Windows.Forms.FlowLayoutPanel cardsPanel;
         private System.Windows.Forms.Label titleLabel;
         private System.Windows.Forms.Label subtitleLabel;
         private System.Windows.Forms.Panel card1Border;

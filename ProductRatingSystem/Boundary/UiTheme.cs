@@ -33,6 +33,29 @@ namespace ProductRatingSystem.Boundary
         // Every button looks the same: a white rectangle with a thin grey border
         // and blue text (like the Logout button). StylePrimaryButton is kept so
         // existing calls still compile; it gives the same look.
+        // For big title labels: keeps the label's normal (design) size, but raises its minimum
+        // height when the text needs more room (for example at a higher display scale or with a
+        // larger font), so the text wraps and is never cut off. It never makes the label smaller.
+        public static void KeepTextVisible(Label mlabel)
+        {
+            bool updating = false;
+            EventHandler update = (sender, e) =>
+            {
+                if (updating || mlabel.Width <= 0)
+                {
+                    return;
+                }
+                updating = true;
+                Size wanted = mlabel.GetPreferredSize(new Size(mlabel.Width, 0));
+                mlabel.MinimumSize = new Size(0, wanted.Height);
+                updating = false;
+            };
+            mlabel.FontChanged += update;
+            mlabel.TextChanged += update;
+            mlabel.SizeChanged += update;
+            mlabel.HandleCreated += update;
+        }
+
         public static void StylePrimaryButton(Button mbutton)
         {
             StyleSecondaryButton(mbutton);

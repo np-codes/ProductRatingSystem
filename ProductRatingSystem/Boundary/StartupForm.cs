@@ -21,6 +21,8 @@ namespace ProductRatingSystem.Boundary
         {
             InitializeComponent();
             UiTheme.StylePrimaryButton(startupButton);
+            UiTheme.KeepTextVisible(titleLabel);
+            UiTheme.KeepTextVisible(subtitleLabel);
 
             showProduct(product1Picture, product1Stars, "product1.png", showcaseRating1);
             showProduct(product2Picture, product2Stars, "product2.png", showcaseRating2);

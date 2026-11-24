@@ -66,7 +66,7 @@ namespace ProductRatingSystem.Boundary
             rateButton.Visible = true;
             reviewsButton.Visible = false;
             reviewsPanel.Visible = false;
-            Height = rateButton.Bottom + 12;
+            Height = rateButton.Bottom + LogicalToDeviceUnits(12);
         }
 
         // ID of the product shown on this card (0 if none).
@@ -165,14 +165,15 @@ namespace ProductRatingSystem.Boundary
             {
                 available -= SystemInformation.VerticalScrollBarWidth;
             }
-            int width = Math.Max(minimumCardWidth, Math.Min(mmaximumWidth, available - 20));
+            int width = Math.Max(mpanel.LogicalToDeviceUnits(minimumCardWidth),
+                Math.Min(mpanel.LogicalToDeviceUnits(mmaximumWidth), available - mpanel.LogicalToDeviceUnits(20)));
             int left = Math.Max(0, (available - width) / 2);
 
             mpanel.SuspendLayout();
             foreach (System.Windows.Forms.Control card in mpanel.Controls)
             {
                 card.Width = width;
-                card.Margin = new Padding(left, 10, 0, 0);
+                card.Margin = new Padding(left, mpanel.LogicalToDeviceUnits(10), 0, 0);
             }
             mpanel.ResumeLayout(true);
         }
@@ -235,8 +236,8 @@ namespace ProductRatingSystem.Boundary
         {
             Label label = new Label();
             label.AutoSize = true;
-            label.MaximumSize = new Size(Math.Max(100, reviewsButton.Width - 24), 0);
-            label.Margin = new Padding(4, 4, 4, 4);
+            label.MaximumSize = new Size(Math.Max(LogicalToDeviceUnits(100), reviewsButton.Width - LogicalToDeviceUnits(24)), 0);
+            label.Margin = new Padding(LogicalToDeviceUnits(4));
             label.Font = new Font("Segoe UI", 9F);
             label.BackColor = Color.White;
             label.ForeColor = Color.Black;
@@ -257,12 +258,12 @@ namespace ProductRatingSystem.Boundary
                 {
                     contentHeight += child.Height + child.Margin.Vertical;
                 }
-                reviewsPanel.Height = Math.Min(Math.Max(contentHeight, 30), 200);
-                Height = reviewsPanel.Bottom + 12;
+                reviewsPanel.Height = Math.Min(Math.Max(contentHeight, LogicalToDeviceUnits(30)), LogicalToDeviceUnits(200));
+                Height = reviewsPanel.Bottom + LogicalToDeviceUnits(12);
             }
             else
             {
-                Height = reviewsButton.Bottom + 12;
+                Height = reviewsButton.Bottom + LogicalToDeviceUnits(12);
             }
         }
 
@@ -278,7 +279,7 @@ namespace ProductRatingSystem.Boundary
             reviewsPanel.Width = reviewsButton.Width;
             foreach (System.Windows.Forms.Control child in reviewsPanel.Controls)
             {
-                child.MaximumSize = new Size(Math.Max(100, reviewsPanel.Width - 24), 0);
+                child.MaximumSize = new Size(Math.Max(LogicalToDeviceUnits(100), reviewsPanel.Width - LogicalToDeviceUnits(24)), 0);
             }
             if (reviewsOpen)
             {

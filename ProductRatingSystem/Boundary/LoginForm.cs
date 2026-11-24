@@ -14,6 +14,7 @@ namespace ProductRatingSystem.Boundary
         {
             InitializeComponent();
             UiTheme.StylePrimaryButton(loginButton);
+            UiTheme.KeepTextVisible(titleLabel);
             loginControl = new LoginControl(this);
             AcceptButton = loginButton;
             ActiveControl = usernameTextBox;

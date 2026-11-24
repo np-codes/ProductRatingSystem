@@ -32,7 +32,8 @@ namespace ProductRatingSystem.Boundary
         // scroll bar, so the boxes line up with the product cards below them.
         private static Padding boxMargin(int mtop)
         {
-            return new Padding(10, mtop, 10 + SystemInformation.VerticalScrollBarWidth, 0);
+            // 17 = standard scroll bar width at 96 DPI; the form scales it with everything else.
+            return new Padding(10, mtop, 10 + 17, 0);
         }
 
         // Builds the header box shared by the Customer and Seller menus: a light
@@ -78,6 +79,9 @@ namespace ProductRatingSystem.Boundary
             foreach (Button button in mbuttons)
             {
                 button.Size = new Size(120, 38);
+                button.AutoSize = true;
+                button.AutoSizeMode = AutoSizeMode.GrowOnly;
+                button.MinimumSize = new Size(120, 38);
                 button.Margin = new Padding(0, 11, 10, 11);
                 button.Font = UiTheme.ButtonFont;
                 buttonPanel.Controls.Add(button);
@@ -87,6 +91,9 @@ namespace ProductRatingSystem.Boundary
             {
                 Text = "Logout",
                 Size = new Size(96, 38),
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowOnly,
+                MinimumSize = new Size(96, 38),
                 Margin = new Padding(0, 11, 0, 11)
             };
             UiTheme.StyleSecondaryButton(logoutButton);
