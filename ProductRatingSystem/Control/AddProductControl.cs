@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using ProductRatingSystem.Boundary;
@@ -14,20 +15,21 @@ namespace ProductRatingSystem.Control
     public class AddProductControl : Controller
     {
         private int userID;
+        private DBConnectorControl db = new DBConnectorControl();
 
         // Extra helper fields (not in the class diagram).
         private AddProductForm addProductForm;
-        private Action<ProductList> showProducts;
+        private Action<ProductList, Dictionary<int, ReviewList>> showProducts;
         private string errorMessage;
 
         // Maximum size of a product image file (5 MB).
         private const long maxImageBytes = 5L * 1024 * 1024;
 
-        // mshowProducts is called with the refreshed product list after the
-        // product has been saved. The SellerMenu passes a method that shows
-        // the Seller Page again, e.g.
-        //     new AddProductControl(list => display(list, username))
-        public AddProductControl(Action<ProductList> mshowProducts)
+        // mshowProducts is called with the refreshed product list and the reviews
+        // of its products after the product has been saved. The SellerMenu passes
+        // a method that shows the Seller Page again, e.g.
+        //     new AddProductControl((list, reviews) => { setReviews(reviews); display(list, username); })
+        public AddProductControl(Action<ProductList, Dictionary<int, ReviewList>> mshowProducts)
         {
             userID = 0;
             showProducts = mshowProducts;
@@ -62,9 +64,10 @@ namespace ProductRatingSystem.Control
                     mproduct.getDescription(), mproduct.getPrice(), 0.0);
                 db.saveProduct(userID, product);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                addProductForm.displayError("The product could not be saved: " + ex.Message);
+                // The details of the error are not shown to the user.
+                addProductForm.displayError("The product could not be saved. Please try again.");
                 return;
             }
 
@@ -73,8 +76,21 @@ namespace ProductRatingSystem.Control
             ProductList productList = db.getProducts(userID);
             if (showProducts != null)
             {
-                showProducts(productList);
+                showProducts(productList, loadReviews(productList));
             }
+        }
+
+        // The Seller Page also shows the reviews of every product, so they are
+        // read here and handed to the SellerMenu (the menu never touches the database).
+        private Dictionary<int, ReviewList> loadReviews(ProductList mproductList)
+        {
+            Dictionary<int, ReviewList> reviews = new Dictionary<int, ReviewList>();
+            for (int i = 0; i < mproductList.getCount(); i++)
+            {
+                Product product = mproductList.getProduct(i);
+                reviews[product.getProductID()] = db.getReviews(product.getProductID());
+            }
+            return reviews;
         }
 
         // Checks every field. On failure errorMessage names the field that

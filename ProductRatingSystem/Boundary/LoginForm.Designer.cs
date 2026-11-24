@@ -62,7 +62,7 @@ namespace ProductRatingSystem.Boundary
             passwordTextBox.UseSystemPasswordChar = true;
             passwordTextBox.KeyDown += passwordTextBox_KeyDown;
 
-            errorLabel.ForeColor = System.Drawing.Color.DarkRed;
+            errorLabel.ForeColor = System.Drawing.Color.Black;
             errorLabel.Location = new System.Drawing.Point(150, 529);
             errorLabel.Size = new System.Drawing.Size(300, 40);
             errorLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;

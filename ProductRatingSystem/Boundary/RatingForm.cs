@@ -28,7 +28,7 @@ namespace ProductRatingSystem.Boundary
         public RatingForm(RateProductControl mcontrol, Product mproduct)
         {
             InitializeComponent();
-            UiTheme.StylePrimaryButton(submitButton);
+            ApplicationForm.StylePrimaryButton(submitButton);
             rateProductControl = mcontrol;
             product = mproduct;
             productRating = null;
@@ -79,7 +79,7 @@ namespace ProductRatingSystem.Boundary
         }
 
         // Called by RateProductControl after the rating has been saved.
-        public void close()
+        public override void close()
         {
             allowClose = true;
             Close();

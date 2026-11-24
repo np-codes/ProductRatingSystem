@@ -6,14 +6,21 @@ using ProductRatingSystem.Entity;
 
 namespace ProductRatingSystem.Boundary
 {
+    // Subsystem: Boundary
+    // The Customer Page (RAD Figure 4.2.1).
     public class CustomerMenu : MainMenu
     {
         private int selectedProductID;
         private FlowLayoutPanel productPanel;
 
+        // ID of the product whose "Rate Product" button was pressed last;
+        // selectProduct() turns it into the selected product.
+        private int clickedProductID;
+
         public CustomerMenu()
         {
             selectedProductID = 0;
+            clickedProductID = 0;
             Text = "Customer Menu";
 
             productPanel = new FlowLayoutPanel
@@ -36,9 +43,16 @@ namespace ProductRatingSystem.Boundary
             ProductCard.keepCentered(productPanel, ProductCard.defaultMaximumCardWidth);
         }
 
+        public override void display(ProductList mproductList, string musername)
+        {
+            setUsername(musername);
+            display(mproductList);
+        }
+
         public void display(ProductList mproductList)
         {
-            userLabel.Text = username;
+            setProductList(mproductList);
+            userLabel.Text = getUsername();
             productPanel.Controls.Clear();
             int count = mproductList == null ? 0 : mproductList.getCount();
             if (mproductList != null)
@@ -49,7 +63,8 @@ namespace ProductRatingSystem.Boundary
                     card.displayCustomer(mproductList.getProduct(i));
                     card.rateProductClicked += (sender, e) =>
                     {
-                        selectedProductID = ((ProductCard)sender).getProductID();
+                        clickedProductID = ((ProductCard)sender).getProductID();
+                        selectProduct();
                         rateProduct();
                     };
                     productPanel.Controls.Add(card);
@@ -63,9 +78,10 @@ namespace ProductRatingSystem.Boundary
             Activate();
         }
 
-        public void selectProduct(int mproductID)
+        // The customer chose a product (RAD Figure 2.5.6: selectProduct()).
+        public void selectProduct()
         {
-            selectedProductID = mproductID;
+            selectedProductID = clickedProductID;
         }
 
         public void rateProduct()

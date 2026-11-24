@@ -27,8 +27,8 @@ namespace ProductRatingSystem.Boundary
         public AddProductForm(AddProductControl mcontrol)
         {
             InitializeComponent();
-            UiTheme.StylePrimaryButton(submitButton);
-            UiTheme.StyleSecondaryButton(chooseImageButton);
+            ApplicationForm.StylePrimaryButton(submitButton);
+            ApplicationForm.StyleSecondaryButton(chooseImageButton);
             addProductControl = mcontrol;
             title = "";
             image = "";
@@ -42,7 +42,7 @@ namespace ProductRatingSystem.Boundary
 
         // Shows the page. It is modal: the Seller Page cannot be used while
         // it is open. Returns after close() has been called.
-        public void display()
+        public override void display()
         {
             ShowDialog();
             Dispose();
@@ -73,7 +73,7 @@ namespace ProductRatingSystem.Boundary
         }
 
         // Called by AddProductControl after the product has been saved.
-        public void close()
+        public override void close()
         {
             allowClose = true;
             Close();

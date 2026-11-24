@@ -2,19 +2,30 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using ProductRatingSystem.Control;
-using ProductRatingSystem.Entity;
 
 namespace ProductRatingSystem.Boundary
 {
+    // Subsystem: Boundary
+    // The Login Page (RAD Figure 4.2.1). It only collects the username and password
+    // and shows messages; LoginControl does everything else, including opening the
+    // main menu.
     public partial class LoginForm : ApplicationForm
     {
+        private string username;
+        private string password;
+
+        // Extra helper field (not in the class diagram).
         private LoginControl loginControl;
 
         public LoginForm()
         {
             InitializeComponent();
-            UiTheme.StylePrimaryButton(loginButton);
+            StylePrimaryButton(loginButton);
+            username = "";
+            password = "";
             loginControl = new LoginControl(this);
+            usernameTextBox.MaxLength = LoginControl.maxUsernameLength;
+            passwordTextBox.MaxLength = LoginControl.maxPasswordLength;
             AcceptButton = loginButton;
             ActiveControl = usernameTextBox;
         }
@@ -29,7 +40,7 @@ namespace ProductRatingSystem.Boundary
             int bodyWidth = (int)(width * 0.86);
             int bodyTop = (int)(height * 0.54);
 
-            using (SolidBrush brush = new SolidBrush(UiTheme.Primary))
+            using (SolidBrush brush = new SolidBrush(TextColor))
             {
                 e.Graphics.FillEllipse(brush, (width - headSize) / 2, 0, headSize, headSize);
                 e.Graphics.FillPie(brush, (width - bodyWidth) / 2, bodyTop,
@@ -37,26 +48,29 @@ namespace ProductRatingSystem.Boundary
             }
         }
 
-        public void display()
+        // Shows the page with a message under the password box (RAD Figure 2.5.4:
+        // display(logoutMessage)). An empty message shows no text. display() and
+        // close() are inherited from ApplicationForm.
+        public void display(string mmessage)
         {
+            errorLabel.Text = mmessage ?? "";
             Show();
         }
 
-        public void close()
-        {
-            Close();
-        }
-
+        // The Login button: reads the two textboxes and submits them.
         public void login()
         {
             errorLabel.Text = "";
+            username = usernameTextBox.Text;
+            password = passwordTextBox.Text;
             loginButton.Enabled = false;
             try
             {
-                loginControl.login(usernameTextBox.Text, passwordTextBox.Text);
+                submit(username, password);
             }
             finally
             {
+                password = "";
                 if (!IsDisposed)
                 {
                     loginButton.Enabled = true;
@@ -64,52 +78,28 @@ namespace ProductRatingSystem.Boundary
             }
         }
 
+        // Hands the entered values to the control (RAD Figure 2.5.2).
+        public void submit(string musername, string mpassword)
+        {
+            loginControl.submit(musername, mpassword);
+        }
+
+        // Shows an error message that names the field, or the generic
+        // "Invalid username or password." message.
         public void displayError(string mmessage)
         {
             errorLabel.Text = mmessage ?? "";
-            if (string.Equals(errorLabel.Text, "Please enter a username.", StringComparison.Ordinal))
+            if (errorLabel.Text.StartsWith("Please enter a username", StringComparison.Ordinal)
+                || errorLabel.Text.StartsWith("Username", StringComparison.Ordinal))
             {
                 usernameTextBox.Focus();
                 usernameTextBox.SelectAll();
             }
-            else if (string.Equals(errorLabel.Text, "Please enter a password.", StringComparison.Ordinal))
-            {
-                passwordTextBox.Focus();
-                passwordTextBox.SelectAll();
-            }
             else
             {
                 passwordTextBox.SelectAll();
                 passwordTextBox.Focus();
             }
-        }
-
-        public void openMenu(UserAccount maccount)
-        {
-            if (maccount == null)
-            {
-                return;
-            }
-
-            DBConnectorControl db = new DBConnectorControl();
-            ProductList products = db.getProducts(maccount.getUserID());
-
-            if (maccount.getRole() == "Seller")
-            {
-                SellerMenu menu = new SellerMenu();
-                menu.userID = maccount.getUserID();
-                menu.username = maccount.getUsername();
-                menu.display(products, maccount.getUsername());
-            }
-            else
-            {
-                CustomerMenu menu = new CustomerMenu();
-                menu.userID = maccount.getUserID();
-                menu.username = maccount.getUsername();
-                menu.display(products);
-            }
-
-            close();
         }
 
         private void loginButton_Click(object sender, EventArgs e)
