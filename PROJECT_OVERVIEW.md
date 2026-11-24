@@ -311,8 +311,11 @@ The hash must be exactly: `Convert.ToHexString(SHA256.HashData(Encoding.UTF8.Get
 
 **`ApplicationForm : Form`** (abstract) – base of every window. Its constructor sets the default
 font and colours and the **standard window**: client size **600 × 780**, fixed border (no
-resizing), no maximize button, centered on screen, 96-DPI scaling. A new form only has to inherit
-from `ApplicationForm`; it must not set its own size.
+resizing), no maximize button, centered on screen, 96-DPI scaling. When a window opens
+(`OnLoad` → `fitToScreen()`), it is shrunk to fit the screen if it is too big (for example at
+150% Windows display scaling the 780 px page becomes 1170 px tall): it then gets a scroll bar and
+stays centered. At 100% scaling, or when the window fits, nothing changes. A new form only has to
+inherit from `ApplicationForm`; it must not set its own size.
 
 **`UiTheme`** (static) – the look of the whole program.
 
@@ -358,6 +361,7 @@ Fields: `userID`, `username`, `userLabel` (shows the name), `countLabel` (shows 
 | `logout()` | `new LogoutControl().logout(userID)`, then closes this menu. |
 | `createHeader(params Button[] mbuttons)` | Top **grey box** (thin border, space around it): user name on the left; the given buttons and **Logout** on the right. |
 | `createHeading(mtext)` | Second **white box**: page title on the left, product count on the right. |
+| `OnLoad` → `scaleForDisplay()` (private) | The menus are built in code, so Windows doesn't enlarge them with the display scaling by itself. This scales the window and the two top boxes once (does nothing at 100%, or if they were already scaled). |
 
 ### `SellerMenu : MainMenu` – Seller page
 Header `[Add Product] [Logout]`, heading "My Products", a scrolling list of `ProductCard`s.
@@ -388,7 +392,7 @@ the database itself.
 | `displayCustomer(mproduct)` | Card for customers: adds the **Rate Product** button. |
 | `rateProductClicked` (event) | Raised when **Rate Product** is pressed. |
 | `getProductID()` | ID of the shown product. |
-| Static helpers | `stars(mrating)` ("★★★☆☆"), `formatPrice(mprice)` ("$44.30"), `formatRating(mrating)` ("3.7"), `loadImage(mpath)` (absolute or relative-to-exe path; grey placeholder if missing), `keepCentered(mpanel, mmaximumWidth)` / `arrangeCards(...)` (cards fill and center in the list). |
+| Static helpers | `stars(mrating)` ("★★★☆☆"), `formatPrice(mprice)` ("$44.30"), `formatRating(mrating)` ("3.7"), `loadImage(mpath)` (absolute or relative-to-exe path; grey placeholder if missing), `keepCentered(mpanel, mmaximumWidth)` / `arrangeCards(...)` (cards fill and center in the list; the minimum card width, 540 px at 100%, grows with the display scaling). |
 | Private | `showProduct`, `fillReviews`, `makeReviewLabel`, `setReviewsOpen`, and event handlers. |
 
 ### `AddProductForm : ApplicationForm` – Add Product page (modal)
@@ -480,13 +484,19 @@ user presses Submit → `AddProductForm.submit()` → `AddProductControl.submit(
 ## 10. Look and feel (all pages)
 
 - **One window size:** 600 × 780 client area, fixed border, centered – set once in `ApplicationForm`.
+- **Display scaling (125%, 150%, ...):** every window grows with the Windows setting. Designer-made
+  forms do this through `AutoScaleDimensions = 96 x 96` and `AutoScaleMode = Dpi` in
+  `InitializeComponent()`; the menus (built in code) through `MainMenu.scaleForDisplay()`. A window
+  that ends up bigger than the screen is shrunk to fit and scrolls (`ApplicationForm.fitToScreen()`).
 - **Colours:** light-grey page, white boxes with thin black borders, light-grey top bars
   (`HeaderBackground`), blue text for actions.
 - **Buttons:** white rectangle, dark thin border, blue Segoe UI Semibold text (`UiTheme`).
 - **Title font:** "PRODUCT RATING SYSTEM" is Times New Roman Bold 40 pt on both the Startup
   and Login pages.
 - **Adding a new form:** inherit from `ApplicationForm`, call
-  `UiTheme.StyleSecondaryButton(button)` for each button, do not set `Size`/`ClientSize`.
+  `UiTheme.StyleSecondaryButton(button)` for each button, do not set `Size`/`ClientSize`. A form
+  made in the designer must keep the `AutoScaleDimensions`/`AutoScaleMode` lines in
+  `InitializeComponent()`; a form built in code must scale itself like `MainMenu` does.
 
 ---
 
