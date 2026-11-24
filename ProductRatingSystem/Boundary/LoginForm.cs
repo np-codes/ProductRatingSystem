@@ -19,6 +19,24 @@ namespace ProductRatingSystem.Boundary
             ActiveControl = usernameTextBox;
         }
 
+        // Draws the user symbol: a large dot (head) above a half circle (shoulders).
+        private void userIconPanel_Paint(object sender, PaintEventArgs e)
+        {
+            e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            int width = userIconPanel.ClientSize.Width;
+            int height = userIconPanel.ClientSize.Height;
+            int headSize = (int)(height * 0.46);
+            int bodyWidth = (int)(width * 0.86);
+            int bodyTop = (int)(height * 0.54);
+
+            using (SolidBrush brush = new SolidBrush(UiTheme.Primary))
+            {
+                e.Graphics.FillEllipse(brush, (width - headSize) / 2, 0, headSize, headSize);
+                e.Graphics.FillPie(brush, (width - bodyWidth) / 2, bodyTop,
+                    bodyWidth, (height - bodyTop) * 2, 180, 180);
+            }
+        }
+
         public void display()
         {
             Show();
@@ -87,6 +105,7 @@ namespace ProductRatingSystem.Boundary
             {
                 CustomerMenu menu = new CustomerMenu();
                 menu.userID = maccount.getUserID();
+                menu.username = maccount.getUsername();
                 menu.display(products);
             }
 

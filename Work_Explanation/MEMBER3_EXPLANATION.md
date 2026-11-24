@@ -18,8 +18,9 @@ Member 3's part covers two use cases from the RAD and the display of ratings and
   overall rating with stars and an expandable **Reviews** list. The customer version shows a
   **Rate Product** button.
 
-Class and method names follow RAD Figures 4.2.1 and 4.2.2 exactly. Nothing in `Entity/`,
-`DBConnectorControl` or anyone else's files was changed.
+Class and method names follow RAD Figures 4.2.1 and 4.2.2 exactly. Nothing in `Entity/` or
+`DBConnectorControl` was changed. The only changes to shared files are the display-scaling fixes
+in section 3.8 (`ApplicationForm`, `MainMenu`, `LoginForm.Designer.cs`).
 
 ---
 
@@ -32,11 +33,15 @@ Class and method names follow RAD Figures 4.2.1 and 4.2.2 exactly. Nothing in `E
 | `Boundary/AddProductForm.cs` + `.Designer.cs` + `.resx` | new | AddProduct Page |
 | `Boundary/RatingForm.cs` + `.Designer.cs` + `.resx` | new | Rating Page |
 | `Boundary/ProductCard.cs` + `.Designer.cs` + `.resx` | new | Product card for the Seller/Customer Pages (helper, not in the class diagram) |
-| `MEMBER3_EXPLANATION.md` | new | this file |
+| `Boundary/ApplicationForm.cs` | changed | every window fits on the screen (section 3.8) |
+| `Boundary/MainMenu.cs` | changed | the Seller and Customer menus scale with Windows display scaling (section 3.8) |
+| `Boundary/LoginForm.Designer.cs` | changed | the Login page scales with Windows display scaling (section 3.8) |
+| `Work_Explanation/MEMBER3_EXPLANATION.md` | new | this file |
 
 The forms have normal `Designer.cs` files, so they open in the Visual Studio designer. Both pages
-open at the team size (`ClientSize` 600 x 780), centered, white background, black text.
-**One difference from the team form rules:** they can be resized and have scroll bars (see 3.7).
+follow the team window rules (set in `ApplicationForm`): `ClientSize` 600 x 780, fixed border,
+no maximize button, centered on the screen. If the screen is too small for the page, they get a
+scroll bar (see 3.7).
 
 ---
 
@@ -117,7 +122,7 @@ form has been submitted successfully. That's why both forms:
 
 ### 3.6 `ProductCard` (Boundary, helper)
 
-A `UserControl` (540 px wide) with the picture, title, description and price.
+A `UserControl` (540 px wide at 100% display scaling) with the picture, title, description and price.
 
 | Member | What it does |
 |---|---|
@@ -128,7 +133,7 @@ A `UserControl` (540 px wide) with the picture, title, description and price.
 | `static stars(double)` | `3.6` → `★★★★☆` (rounded to whole stars). |
 | `static loadImage(string)` | Loads a product picture (absolute, or relative to the `.exe`). Placeholder if missing. |
 | `static formatPrice(double)` / `formatRating(double)` | `$44.30` / `3.7` |
-| `static keepCentered(FlowLayoutPanel, int)` | Call once for a product list. The cards stretch with the window from 540 px up to the given width (use `defaultMaximumCardWidth` = 1800) and stay centered. Re-arranges on every resize and when cards are added. |
+| `static keepCentered(FlowLayoutPanel, int)` | Call once for a product list. The cards stretch with the list from their minimum width up to the given width (use `defaultMaximumCardWidth` = 1800) and stay centered. The minimum is 540 px at 100% display scaling and grows with it (810 px at 150%), so a card's contents are never squeezed. Re-arranges on every resize and when cards are added. |
 | `static arrangeCards(FlowLayoutPanel, int)` | Does the same arranging once (used by `keepCentered`). |
 
 The title, description, rating line and Reviews list stretch with the card (`Anchor`), and the
@@ -136,20 +141,36 @@ open review list re-wraps its text when the card gets wider or narrower.
 
 The card never reads the database. Whoever builds the page passes the data in.
 
-### 3.7 Resizing and scroll bars
+### 3.7 Scroll bars when the screen is too small
 
-At 600 x 780 the pages can be taller than a laptop screen, especially with Windows display
-scaling at 125% or 150%. Then the bottom of the page (the Submit button) was cut off. So both pages:
-- put all their controls on one 600 x 780 panel (`contentPanel`) and have `AutoScroll = true`:
-  when the window is smaller than the page, scroll bars appear;
-- are resizable (`FormBorderStyle = Sizable`, maximize allowed, minimum 360 x 300);
-- shrink to fit the screen when they open (`Load` event) if they would be taller or wider
-  than it, and stay centered on the screen;
-- keep the page centered horizontally when the window is made wider (`Resize` event,
-  `centerContent()`).
+At 600 x 780 a page can be taller than a laptop screen, especially with Windows display scaling
+at 125% or 150% (at 150% the page is 1170 px tall). Without help the bottom of the page, with the
+Submit button, would be cut off. So both pages:
+- put all their controls on one 600 x 780 panel (`contentPanel`) and have `AutoScroll = true`,
+  so a scroll bar appears when the window is smaller than the page;
+- shrink to fit the screen when they open (`ApplicationForm` and their own `Load` event) and stay
+  centered on the screen. The window size itself is fixed (team rule): the user can't drag it
+  bigger or smaller;
+- keep the page centered in the window and never under the scroll bar (`centerContent()`).
 
-In the Visual Studio designer, the controls are now inside `contentPanel`. To move one, select
-it as usual; to add a new control, drop it onto the panel, not the form.
+In the Visual Studio designer, the controls are inside `contentPanel`. To move one, select it as
+usual; to add a new control, drop it onto the panel, not the form.
+
+### 3.8 Display scaling (125%, 150%, ...) for every window
+
+On a laptop with Windows display scaling above 100% (Settings → System → Display → Scale), the
+text grows with the setting. Every window has to grow with it too, or the text gets cut off.
+Teammates with 100% scaling never see the problem. These changes make every window scale and
+fit on the screen:
+
+| File | Change |
+|---|---|
+| `LoginForm.Designer.cs` | Added `AutoScaleDimensions = new SizeF(96F, 96F);` and `AutoScaleMode = AutoScaleMode.Dpi;` in `InitializeComponent()`, just above `ClientSize`. They tell Windows the page was designed at 100%, so it enlarges the page by the display scaling. Every designer-made form needs these two lines (the other forms already had them). |
+| `MainMenu.cs` | The Seller and Customer menus are built in code, not in the designer, so Windows doesn't enlarge them by itself. `OnLoad` calls `scaleForDisplay()`, which scales the window and the two top boxes (header and heading) once by the display scaling. It does nothing at 100%, or if Windows already scaled the boxes, so nothing is ever scaled twice. The product cards scale themselves. |
+| `ApplicationForm.cs` | `OnLoad` calls `fitToScreen()` for **every** window: if the window is taller or wider than the screen, it is shrunk to fit, gets a scroll bar (with room for it, so no sideways scrolling) and is centered. At 100%, or when the window fits, nothing changes. |
+| `ProductCard.cs` | The minimum card width grows with the display scaling (see 3.6). |
+
+Message boxes and the file dialog are drawn by Windows and scale by themselves.
 
 ---
 
@@ -186,12 +207,12 @@ CustomerMenu.selectProduct() + rateProduct()
 
 ---
 
-## 5. For Member 2: connecting the menus
+## 5. How the menus use these classes
 
 The RAD's sequence diagrams end with the control calling `SellerMenu.display(productList, username)`
-or `CustomerMenu.display(productList)`. The menus don't exist yet, so the controls take a
-method to call at that point (constructor parameter). That keeps the project building now, and
-it means my classes never need to know which menu object is open. Suggested code:
+or `CustomerMenu.display(productList)`. The controls take that method as a constructor parameter
+instead of a menu object, so they never need to know which menu object is open (and the project
+could be built before the menus existed). This is how the menus use them:
 
 **SellerMenu**
 ```csharp
@@ -249,40 +270,37 @@ public void rateProduct()
 }
 ```
 
-The menus need the logged-in `userID` (and the seller's `username`), passed in from login.
-Call `ProductCard.keepCentered(productPanel, ProductCard.defaultMaximumCardWidth);` once for
-each page's product panel (both menus), so the cards stretch with the window up to 1800 px wide
-and stay centered. Make the menu forms resizable for this to be useful.
+The menus get the logged-in `userID` (and the seller's `username`) from login. Both menus call
+`ProductCard.keepCentered(productPanel, ProductCard.defaultMaximumCardWidth);` once in their
+constructor, so the cards fill the list (up to 1800 px wide) and stay centered.
 
 ---
 
 ## 6. How to test it
 
-Build with **Ctrl+Shift+B**; it should say 0 errors (nullable warnings are normal).
+Build with **Ctrl+Shift+B**; it should say 0 errors (nullable warnings are normal). Press **F5**,
+click **Startup**, then log in. The sample accounts are `seller1` and `customer1`, both with the
+password `pass123`.
 
-Until the menus exist, test with a few **temporary** lines in `Control/StartupControl.cs`,
-`initiate()`, right after `db.initializeDB();` (instead of the two `Form1` lines). With the
-sample data, `customer1` is user 1 and `seller1` is user 2.
+**Add Product** (log in as `seller1`, press **Add Product**)
 
-**Add Product**
-```csharp
-new AddProductControl(list => MessageBox.Show("seller1 now has " + list.getCount() + " products")).addProduct(2);
-```
 Try: Submit with an empty form (→ `Title:` error), a letter in the price (→ `Price:`),
-`12.345` (→ `Price:`), then a valid product (message: "seller1 now has 4 products").
-Check that the X button and Alt+F4 don't close the page.
+`12.345` (→ `Price:`), then a valid product. The page closes and the new product appears on the
+Seller Page (Count goes up by 1). Check that the X button and Alt+F4 don't close the page.
 
-**Rate Product**
-```csharp
-new RateProductControl(list => MessageBox.Show("Products left to rate: " + list.getCount())).rateProduct(1, 1);
-```
-Try: Submit with no stars (→ `Rating:` error), with no review (→ `Review:`), then a valid one
-(message: "Products left to rate: 2"). Run it again with the same product: it says the product
-is no longer available for rating, because customer1 already rated it. In **DB Browser for SQLite**
-check `PRODUCTRATING` (new row), `PURCHASE` (`rated = 1`) and `PRODUCT.overallRating`.
+**Rate Product** (log out, log in as `customer1`, press **Rate Product** on a card)
 
-**Remove these lines again before committing.** (After the test page closes, no window is left
-open, so the app ends. That's expected.)
+Try: Submit with no stars (→ `Rating:` error), with no review (→ `Review:`), then a valid one.
+The page closes, the product is gone from the Customer Page and the Count goes down by 1. Log in
+as `seller1` again: the product shows the new overall rating and, under **Reviews**, the review.
+In **DB Browser for SQLite** check `PRODUCTRATING` (new row), `PURCHASE` (`rated = 1`) and
+`PRODUCT.overallRating`.
+
+**Display scaling** (only if your screen allows it)
+
+In Windows **Settings → System → Display → Scale**, choose 125% or 150% and run the program again.
+Every window (Startup, Login, both menus, Add Product, Rating) should be enlarged, fit on the
+screen and show a scroll bar if the page is taller than the screen. Set the scale back afterwards.
 
 To reset the data, delete `bin/Debug/net9.0-windows/ProductRatingSystem.db` (and the
 `Images/Products` folder next to it, if you like).

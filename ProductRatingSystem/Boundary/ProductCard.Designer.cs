@@ -32,11 +32,14 @@ namespace ProductRatingSystem.Boundary
             titleLabel = new System.Windows.Forms.Label();
             descriptionLabel = new System.Windows.Forms.Label();
             priceLabel = new System.Windows.Forms.Label();
+            ratingPanel = new System.Windows.Forms.Panel();
             ratingLabel = new System.Windows.Forms.Label();
+            starsLabel = new System.Windows.Forms.Label();
             rateButton = new System.Windows.Forms.Button();
             reviewsButton = new System.Windows.Forms.Button();
             reviewsPanel = new System.Windows.Forms.FlowLayoutPanel();
             ((System.ComponentModel.ISupportInitialize)pictureBox).BeginInit();
+            ratingPanel.SuspendLayout();
             SuspendLayout();
             //
             // pictureBox
@@ -83,6 +86,7 @@ namespace ProductRatingSystem.Boundary
             // priceLabel
             //
             priceLabel.BackColor = System.Drawing.Color.White;
+            priceLabel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             priceLabel.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             priceLabel.ForeColor = System.Drawing.Color.Black;
             priceLabel.Location = new System.Drawing.Point(140, 102);
@@ -90,21 +94,44 @@ namespace ProductRatingSystem.Boundary
             priceLabel.Size = new System.Drawing.Size(110, 28);
             priceLabel.TabIndex = 3;
             priceLabel.Text = "$0.00";
-            priceLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            priceLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             //
-            // ratingLabel
+            // ratingPanel
             //
-            ratingLabel.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            ratingPanel.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            ratingPanel.BackColor = System.Drawing.Color.White;
+            ratingPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            ratingPanel.Controls.Add(ratingLabel);
+            ratingPanel.Controls.Add(starsLabel);
+            ratingPanel.Location = new System.Drawing.Point(260, 102);
+            ratingPanel.Name = "ratingPanel";
+            ratingPanel.Size = new System.Drawing.Size(270, 28);
+            ratingPanel.TabIndex = 4;
+            //
+            // ratingLabel (text, left side with space on the left)
+            //
             ratingLabel.BackColor = System.Drawing.Color.White;
-            ratingLabel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            ratingLabel.Font = new System.Drawing.Font("Segoe UI Symbol", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+            ratingLabel.Dock = System.Windows.Forms.DockStyle.Fill;
+            ratingLabel.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             ratingLabel.ForeColor = System.Drawing.Color.Black;
-            ratingLabel.Location = new System.Drawing.Point(255, 102);
             ratingLabel.Name = "ratingLabel";
-            ratingLabel.Size = new System.Drawing.Size(275, 28);
-            ratingLabel.TabIndex = 4;
-            ratingLabel.Text = "Overall Rating: 0.0   ☆☆☆☆☆";
+            ratingLabel.Padding = new System.Windows.Forms.Padding(10, 0, 0, 0);
+            ratingLabel.TabIndex = 0;
+            ratingLabel.Text = "Overall Rating: 0.0";
             ratingLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            //
+            // starsLabel (stars, right side with space on the right)
+            //
+            starsLabel.BackColor = System.Drawing.Color.White;
+            starsLabel.Dock = System.Windows.Forms.DockStyle.Right;
+            starsLabel.Font = new System.Drawing.Font("Segoe UI Symbol", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+            starsLabel.ForeColor = System.Drawing.Color.Black;
+            starsLabel.Name = "starsLabel";
+            starsLabel.Padding = new System.Windows.Forms.Padding(0, 0, 10, 0);
+            starsLabel.Size = new System.Drawing.Size(110, 26);
+            starsLabel.TabIndex = 1;
+            starsLabel.Text = "☆☆☆☆☆";
+            starsLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             //
             // rateButton
             //
@@ -158,7 +185,7 @@ namespace ProductRatingSystem.Boundary
             Controls.Add(reviewsPanel);
             Controls.Add(reviewsButton);
             Controls.Add(rateButton);
-            Controls.Add(ratingLabel);
+            Controls.Add(ratingPanel);
             Controls.Add(priceLabel);
             Controls.Add(descriptionLabel);
             Controls.Add(titleLabel);
@@ -170,6 +197,7 @@ namespace ProductRatingSystem.Boundary
             Disposed += productCard_Disposed;
             Resize += productCard_Resize;
             ((System.ComponentModel.ISupportInitialize)pictureBox).EndInit();
+            ratingPanel.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -179,7 +207,9 @@ namespace ProductRatingSystem.Boundary
         private System.Windows.Forms.Label titleLabel;
         private System.Windows.Forms.Label descriptionLabel;
         private System.Windows.Forms.Label priceLabel;
+        private System.Windows.Forms.Panel ratingPanel;
         private System.Windows.Forms.Label ratingLabel;
+        private System.Windows.Forms.Label starsLabel;
         private System.Windows.Forms.Button rateButton;
         private System.Windows.Forms.Button reviewsButton;
         private System.Windows.Forms.FlowLayoutPanel reviewsPanel;

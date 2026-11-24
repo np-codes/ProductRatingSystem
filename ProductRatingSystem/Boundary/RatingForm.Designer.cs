@@ -33,6 +33,7 @@ namespace ProductRatingSystem.Boundary
             productPicture = new System.Windows.Forms.PictureBox();
             descriptionTextBox = new System.Windows.Forms.TextBox();
             priceLabel = new System.Windows.Forms.Label();
+            ratingBox = new System.Windows.Forms.Panel();
             ratingCaptionLabel = new System.Windows.Forms.Label();
             star1Button = new System.Windows.Forms.Button();
             star2Button = new System.Windows.Forms.Button();
@@ -51,7 +52,7 @@ namespace ProductRatingSystem.Boundary
             //
             // headerLabel
             //
-            headerLabel.BackColor = System.Drawing.Color.White;
+            headerLabel.BackColor = System.Drawing.Color.Gainsboro;
             headerLabel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             headerLabel.Font = new System.Drawing.Font("Segoe UI", 22F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             headerLabel.ForeColor = System.Drawing.Color.Black;
@@ -119,7 +120,7 @@ namespace ProductRatingSystem.Boundary
             ratingCaptionLabel.BackColor = System.Drawing.Color.White;
             ratingCaptionLabel.Font = new System.Drawing.Font("Segoe UI", 13F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             ratingCaptionLabel.ForeColor = System.Drawing.Color.Black;
-            ratingCaptionLabel.Location = new System.Drawing.Point(100, 456);
+            ratingCaptionLabel.Location = new System.Drawing.Point(10, 7);
             ratingCaptionLabel.Name = "ratingCaptionLabel";
             ratingCaptionLabel.Size = new System.Drawing.Size(90, 32);
             ratingCaptionLabel.TabIndex = 5;
@@ -134,7 +135,7 @@ namespace ProductRatingSystem.Boundary
             star1Button.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             star1Button.Font = new System.Drawing.Font("Segoe UI Symbol", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             star1Button.ForeColor = System.Drawing.Color.Black;
-            star1Button.Location = new System.Drawing.Point(196, 450);
+            star1Button.Location = new System.Drawing.Point(106, 1);
             star1Button.Name = "star1Button";
             star1Button.Size = new System.Drawing.Size(42, 44);
             star1Button.TabIndex = 6;
@@ -151,7 +152,7 @@ namespace ProductRatingSystem.Boundary
             star2Button.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             star2Button.Font = new System.Drawing.Font("Segoe UI Symbol", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             star2Button.ForeColor = System.Drawing.Color.Black;
-            star2Button.Location = new System.Drawing.Point(240, 450);
+            star2Button.Location = new System.Drawing.Point(150, 1);
             star2Button.Name = "star2Button";
             star2Button.Size = new System.Drawing.Size(42, 44);
             star2Button.TabIndex = 7;
@@ -168,7 +169,7 @@ namespace ProductRatingSystem.Boundary
             star3Button.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             star3Button.Font = new System.Drawing.Font("Segoe UI Symbol", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             star3Button.ForeColor = System.Drawing.Color.Black;
-            star3Button.Location = new System.Drawing.Point(284, 450);
+            star3Button.Location = new System.Drawing.Point(194, 1);
             star3Button.Name = "star3Button";
             star3Button.Size = new System.Drawing.Size(42, 44);
             star3Button.TabIndex = 8;
@@ -185,7 +186,7 @@ namespace ProductRatingSystem.Boundary
             star4Button.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             star4Button.Font = new System.Drawing.Font("Segoe UI Symbol", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             star4Button.ForeColor = System.Drawing.Color.Black;
-            star4Button.Location = new System.Drawing.Point(328, 450);
+            star4Button.Location = new System.Drawing.Point(238, 1);
             star4Button.Name = "star4Button";
             star4Button.Size = new System.Drawing.Size(42, 44);
             star4Button.TabIndex = 9;
@@ -202,7 +203,7 @@ namespace ProductRatingSystem.Boundary
             star5Button.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             star5Button.Font = new System.Drawing.Font("Segoe UI Symbol", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             star5Button.ForeColor = System.Drawing.Color.Black;
-            star5Button.Location = new System.Drawing.Point(372, 450);
+            star5Button.Location = new System.Drawing.Point(282, 1);
             star5Button.Name = "star5Button";
             star5Button.Size = new System.Drawing.Size(42, 44);
             star5Button.TabIndex = 10;
@@ -216,7 +217,7 @@ namespace ProductRatingSystem.Boundary
             ratingValueLabel.BackColor = System.Drawing.Color.White;
             ratingValueLabel.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             ratingValueLabel.ForeColor = System.Drawing.Color.Black;
-            ratingValueLabel.Location = new System.Drawing.Point(418, 462);
+            ratingValueLabel.Location = new System.Drawing.Point(328, 12);
             ratingValueLabel.Name = "ratingValueLabel";
             ratingValueLabel.Size = new System.Drawing.Size(120, 22);
             ratingValueLabel.TabIndex = 11;
@@ -229,7 +230,7 @@ namespace ProductRatingSystem.Boundary
             reviewCaptionLabel.BackColor = System.Drawing.Color.White;
             reviewCaptionLabel.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             reviewCaptionLabel.ForeColor = System.Drawing.Color.Black;
-            reviewCaptionLabel.Location = new System.Drawing.Point(60, 502);
+            reviewCaptionLabel.Location = new System.Drawing.Point(60, 510);
             reviewCaptionLabel.Name = "reviewCaptionLabel";
             reviewCaptionLabel.TabIndex = 12;
             reviewCaptionLabel.Text = "Your review";
@@ -240,7 +241,7 @@ namespace ProductRatingSystem.Boundary
             reviewTextBox.BackColor = System.Drawing.Color.White;
             reviewTextBox.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             reviewTextBox.ForeColor = System.Drawing.Color.Black;
-            reviewTextBox.Location = new System.Drawing.Point(60, 524);
+            reviewTextBox.Location = new System.Drawing.Point(60, 532);
             reviewTextBox.MaxLength = 1000;
             reviewTextBox.Multiline = true;
             reviewTextBox.Name = "reviewTextBox";
@@ -254,7 +255,7 @@ namespace ProductRatingSystem.Boundary
             reviewCountLabel.BackColor = System.Drawing.Color.White;
             reviewCountLabel.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             reviewCountLabel.ForeColor = System.Drawing.Color.Black;
-            reviewCountLabel.Location = new System.Drawing.Point(340, 678);
+            reviewCountLabel.Location = new System.Drawing.Point(340, 686);
             reviewCountLabel.Name = "reviewCountLabel";
             reviewCountLabel.Size = new System.Drawing.Size(200, 18);
             reviewCountLabel.TabIndex = 14;
@@ -266,7 +267,7 @@ namespace ProductRatingSystem.Boundary
             submitButton.BackColor = System.Drawing.Color.White;
             submitButton.Font = new System.Drawing.Font("Times New Roman", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 0);
             submitButton.ForeColor = System.Drawing.Color.Black;
-            submitButton.Location = new System.Drawing.Point(225, 708);
+            submitButton.Location = new System.Drawing.Point(225, 716);
             submitButton.Name = "submitButton";
             submitButton.Size = new System.Drawing.Size(150, 44);
             submitButton.TabIndex = 15;
@@ -274,20 +275,30 @@ namespace ProductRatingSystem.Boundary
             submitButton.UseVisualStyleBackColor = false;
             submitButton.Click += submitButton_Click;
             //
+            // ratingBox (box around the "Rating:" row)
+            //
+            ratingBox.BackColor = System.Drawing.Color.White;
+            ratingBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            ratingBox.Controls.Add(ratingValueLabel);
+            ratingBox.Controls.Add(star5Button);
+            ratingBox.Controls.Add(star4Button);
+            ratingBox.Controls.Add(star3Button);
+            ratingBox.Controls.Add(star2Button);
+            ratingBox.Controls.Add(star1Button);
+            ratingBox.Controls.Add(ratingCaptionLabel);
+            ratingBox.Location = new System.Drawing.Point(70, 456);
+            ratingBox.Name = "ratingBox";
+            ratingBox.Size = new System.Drawing.Size(460, 48);
+            ratingBox.TabIndex = 6;
+            //
             // contentPanel
             //
             contentPanel.BackColor = System.Drawing.Color.White;
             contentPanel.Controls.Add(submitButton);
+            contentPanel.Controls.Add(ratingBox);
             contentPanel.Controls.Add(reviewCountLabel);
             contentPanel.Controls.Add(reviewTextBox);
             contentPanel.Controls.Add(reviewCaptionLabel);
-            contentPanel.Controls.Add(ratingValueLabel);
-            contentPanel.Controls.Add(star5Button);
-            contentPanel.Controls.Add(star4Button);
-            contentPanel.Controls.Add(star3Button);
-            contentPanel.Controls.Add(star2Button);
-            contentPanel.Controls.Add(star1Button);
-            contentPanel.Controls.Add(ratingCaptionLabel);
             contentPanel.Controls.Add(priceLabel);
             contentPanel.Controls.Add(descriptionTextBox);
             contentPanel.Controls.Add(productPicture);
@@ -307,7 +318,8 @@ namespace ProductRatingSystem.Boundary
             ClientSize = new System.Drawing.Size(600, 780);
             Controls.Add(contentPanel);
             ForeColor = System.Drawing.Color.Black;
-            FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
+            FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            MaximizeBox = false;
             MinimumSize = new System.Drawing.Size(360, 300);
             MinimizeBox = false;
             Name = "RatingForm";
@@ -327,6 +339,7 @@ namespace ProductRatingSystem.Boundary
         #endregion
 
         private System.Windows.Forms.Panel contentPanel;
+        private System.Windows.Forms.Panel ratingBox;
         private System.Windows.Forms.Label headerLabel;
         private System.Windows.Forms.Label titleLabel;
         private System.Windows.Forms.PictureBox productPicture;

@@ -46,9 +46,9 @@ namespace ProductRatingSystem.Boundary
             UiTheme.StyleSecondaryButton(reviewsButton);
             reviewList = mreviews != null ? mreviews : new ReviewList(new ProductRating[0]);
 
-            ratingLabel.Text = "Overall Rating: " + formatRating(product.getOverallRating())
-                + "   " + stars(product.getOverallRating());
-            ratingLabel.Visible = true;
+            ratingLabel.Text = "Overall Rating: " + formatRating(product.getOverallRating());
+            starsLabel.Text = stars(product.getOverallRating());
+            ratingPanel.Visible = true;
             rateButton.Visible = false;
             reviewsButton.Visible = true;
 
@@ -62,7 +62,7 @@ namespace ProductRatingSystem.Boundary
             showProduct(mproduct);
             UiTheme.StylePrimaryButton(rateButton);
 
-            ratingLabel.Visible = false;
+            ratingPanel.Visible = false;
             rateButton.Visible = true;
             reviewsButton.Visible = false;
             reviewsPanel.Visible = false;
@@ -155,6 +155,15 @@ namespace ProductRatingSystem.Boundary
             arrangeCards(mpanel, mmaximumWidth);
         }
 
+        // Windows display scaling as a factor: 1.0 at 100%, 1.5 at 150%.
+        private static float displayScale()
+        {
+            using (Graphics graphics = Graphics.FromHwnd(IntPtr.Zero))
+            {
+                return Math.Max(1F, graphics.DpiX / 96F);
+            }
+        }
+
         // Sets the width and left margin of every card in the panel once.
         public static void arrangeCards(FlowLayoutPanel mpanel, int mmaximumWidth)
         {
@@ -165,7 +174,11 @@ namespace ProductRatingSystem.Boundary
             {
                 available -= SystemInformation.VerticalScrollBarWidth;
             }
-            int width = Math.Max(minimumCardWidth, Math.Min(mmaximumWidth, available - 20));
+            // The card's design width grows with Windows display scaling (540 px at
+            // 100%, 810 px at 150%), so the minimum grows with it; otherwise the
+            // card's contents would be squeezed together.
+            int minimum = (int)Math.Round(minimumCardWidth * displayScale());
+            int width = Math.Max(minimum, Math.Min(mmaximumWidth, available - 20));
             int left = Math.Max(0, (available - width) / 2);
 
             mpanel.SuspendLayout();

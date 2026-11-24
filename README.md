@@ -1,80 +1,131 @@
-﻿# Product Rating System
-CSCI 4711 Software Engineering – team project (C#, Windows Forms, .NET 9)
+# Product Rating System
 
-## Work split
-Entity classes (Appendix A) are already done and in `Entity/`.
-Exact class and method names for every task are in RAD sections 4.2.1 and 4.2.2.
+CSCI 4711 Software Engineering team project. A Windows desktop application written in C# (Windows
+Forms, .NET 9) where **sellers** list products and **customers** rate and review them. Data is
+stored in a local SQLite file; no server or internet connection is needed.
 
-### Member 1 – Database and Startup
-- Database connector in `Control/`: set up SQLite and the tables for users, products and ratings
-- Methods to read and save users, products and ratings
-- Startup use case: app opens, connects to the database, shows the login screen (`Program.cs`)
-- Sample data (test users and products) so the others can test
-- Merges pull requests into `main` and keeps the project building
+## What it does
+- **Startup Page** → press **Startup** → **Login** page.
+- **Customer:** sees the products they have not rated yet, gives each 1–5 stars and a written review.
+- **Seller:** sees their own products with the overall rating and all reviews, and can **add a product**
+  (title, picture, description, price).
+- Passwords are stored only as SHA-256 hashes. Logins, failed logins and logouts are logged.
 
-### Member 2 – Login and Logout
-- Login use case: login form (`Boundary/`) and login control (`Control/`)
-- Logout use case: logout control and returning to the login screen
-- Customer menu and Seller menu (`Boundary/`): the screens each role sees after logging in
+## Requirements
+| Need | Notes |
+|---|---|
+| **Windows 10 or 11** | The app is a Windows Forms program; it only runs on Windows. |
+| **.NET 9 SDK** | Download from <https://dotnet.microsoft.com/download/dotnet/9.0>. Check with `dotnet --version` (should start with `9.`). |
+| **Visual Studio 2022 (17.12 or newer)** | Optional but recommended. Install the **".NET desktop development"** workload. |
+| Internet (first build only) | NuGet downloads the `Microsoft.Data.Sqlite` package. |
 
-### Member 3 – Add Product and Rate Product
-- Add Product use case: add product form (`Boundary/`) and add product control (`Control/`), for Sellers
-- Rate Product use case: product list / rate product form (`Boundary/`) and rate product control (`Control/`), for Customers
-- Showing a product's reviews and overall rating
+## How to run
 
-## Project structure
-- `Entity/` – data classes (UserAccount, Product, ProductRating, ProductList, ReviewList)
-- `Control/` – logic for each use case and the database connector
-- `Boundary/` – forms and menus
+### Option A – Visual Studio
+1. Clone the repository (or download it as a ZIP and unzip it):
+   ```
+   git clone https://github.com/np-codes/ProductRatingSystem.git
+   ```
+2. Open `ProductRatingSystem.sln`.
+3. Build with **Ctrl+Shift+B** (it should say 0 errors), then press **F5** to run.
 
-## Coding rules
-- Class and method names must match RAD sections 4.2.1 and 4.2.2 exactly.
-- Namespaces: `ProductRatingSystem.Entity`, `ProductRatingSystem.Control`, `ProductRatingSystem.Boundary`
-- Every class is `public class`. Visual Studio's Add → Class makes it `internal`, so change it.
-- One class per file; the file name matches the class name (e.g. `LoginControl.cs`).
-- Constructor and method parameters start with `m` (e.g. `muserID`), like Appendix A.
-- Use other folders with `using`, e.g. `using ProductRatingSystem.Entity;`
-- In Boundary files, write `LoginControl`, not `Control.LoginControl`.
-- Don't change Entity classes or someone else's files without telling the team first.
-
-## Git commands
-
-### First time only
-```
-git clone https://github.com/np-codes/ProductRatingSystem.git
-cd ProductRatingSystem
-git checkout -b your-branch-name
-```
-
-### Every time you start working
-```
-git checkout your-branch-name
-git pull origin main
-```
-(`git pull origin main` brings in everyone's merged work.)
-
-### Saving and pushing your work
+### Option B – command line
+From the folder that contains `ProductRatingSystem.sln`:
 ```
 dotnet build
+dotnet run --project ProductRatingSystem
+```
+
+### Using the program
+1. The **Startup Page** opens. Click **Startup**. The database is created on the first click.
+2. Log in with a sample account. The password for every account is **`pass123`**.
+
+| Username | Role |
+|---|---|
+| `customer1`, `customer2`, `customer3` | Customer |
+| `seller1`, `seller2`, `seller3` | Seller |
+
+3. The three sample products belong to `seller1`; `seller2` and `seller3` start with no products
+   (use **Add Product**). Customers see all products they have not rated yet.
+4. Click **Logout** to return to the Login page. Closing the last window ends the program.
+
+### Where is the database? How do I reset it?
+The file `ProductRatingSystem.db` is created next to the program, in
+`ProductRatingSystem/bin/Debug/net9.0-windows/`. It is not part of the repository.
+To start again with fresh sample data: **close the app, delete `ProductRatingSystem.db`, and run
+the app again.** If Windows says the file is in use, close any program that has it open (for
+example DB Browser for SQLite). Pictures added by sellers are copied to `Images/Products/` next to
+the program.
+
+### Troubleshooting
+| Problem | Fix |
+|---|---|
+| `dotnet` is not recognized, or a build error mentions the target framework / `net9.0-windows` | Install the .NET 9 SDK (see Requirements). |
+| Package `Microsoft.Data.Sqlite` cannot be restored | Connect to the internet and build again. |
+| Product pictures are grey boxes | The picture file is missing. Sample pictures live in `ProductRatingSystem/Images/` (only `.png` files are copied on build). |
+| New sample users or products do not appear | Sample data is only added to an empty database; delete `ProductRatingSystem.db` (see above). |
+
+## The team
+
+| Member | Name | Work |
+|---|---|---|
+| 1 | **Nisarg Patel** | **Database and Startup.** `DBConnectorControl` (SQLite tables, sample data, every database read/write), the Startup use case (`RatingSystem`, `StartupControl`, `StartupForm`), and keeping the project building. |
+| 2 | **Dean Thompson** | **Login, Logout and menus.** `LoginForm`, `LoginControl`, `LogoutControl`, and the Customer and Seller menus (`CustomerMenu`, `SellerMenu`, `MainMenu`) with the shared look (`ApplicationForm`, `UiTheme`). |
+| 3 | **Daniel Reed** | **Add Product and Rate Product.** `AddProductForm` / `AddProductControl` for sellers, `RatingForm` / `RateProductControl` for customers, the product cards (`ProductCard`) and showing reviews and overall ratings. |
+
+The `Entity` classes (`UserAccount`, `Product`, `ProductRating`, `ProductList`, `ReviewList`) are
+shared by everyone.
+
+## Project structure
+```
+ProductRatingSystem.sln
+ProductRatingSystem/
+├── RatingSystem.cs     Program entry point (Main)
+├── Entity/             Data classes: UserAccount, Product, ProductRating, ProductList, ReviewList
+├── Control/            Logic: DBConnectorControl (database), Startup/Login/Logout/AddProduct/RateProduct controls
+├── Boundary/           Screens (Windows Forms): Startup, Login, menus, Add Product, Rating, product card
+└── Images/             Pictures copied next to the program when you build
+```
+The code follows the **Boundary – Control – Entity** pattern: forms (Boundary) call controls
+(Control), which use `DBConnectorControl` and the Entity classes.
+
+## More documentation
+| File | Contents |
+|---|---|
+| `PROJECT_OVERVIEW.md` | Start here for details: every file and class, methods, database tables, how the program runs. |
+| `Work_Explanation/MEMBER1_EXPLANATION.md` | Database, startup, final changes (Nisarg Patel). |
+| `Work_Explanation/MEMBER2_EXPLANATION.md` | Login, logout and menus (Dean Thompson). |
+| `Work_Explanation/MEMBER3_EXPLANATION.md` | Add Product and Rate Product (Daniel Reed). |
+
+## For contributors
+
+### Coding rules
+- Class and method names follow RAD sections 4.2.1 and 4.2.2.
+- Namespaces: `ProductRatingSystem.Entity`, `ProductRatingSystem.Control`, `ProductRatingSystem.Boundary`.
+- Every class is `public class`. Visual Studio's Add → Class makes it `internal`, so change it.
+- One class per file; the file name matches the class name (e.g. `LoginControl.cs`).
+- Parameters start with `m` (e.g. `muserID`), like the Entity classes.
+- In Boundary files write `LoginControl`, not `Control.LoginControl`.
+- New forms inherit from `ApplicationForm` (same 600 × 780 window) and style buttons with
+  `UiTheme.StyleSecondaryButton`. Do not set your own form size.
+- Don't change Entity classes or someone else's files without telling the team first.
+
+### Git workflow
+```
+git clone https://github.com/np-codes/ProductRatingSystem.git     (first time only)
+git checkout -b your-branch-name                                  (first time only)
+
+git checkout your-branch-name                                     (every time you start)
+git pull origin main
+
+dotnet build                                                      (must say 0 errors)
 git add .
 git commit -m "Short description of what you did"
 git push -u origin your-branch-name
 ```
-After the first push, `git push` on its own is enough.
+Then on GitHub click **Compare & pull request** → **Create pull request**; a teammate reviews and
+merges it, and everyone runs `git pull origin main` again.
 
-### Getting your work into main
-1. On GitHub, click **Compare & pull request** for your branch.
-2. Click **Create pull request**.
-3. A teammate checks it and clicks **Merge pull request**.
-4. Everyone else runs `git pull origin main` on their own branch.
-
-### Rules
 - Never push directly to `main`.
-- Build before every push. It must say 0 errors.
-- Pull from `main` often, at least before starting work and before opening a pull request.
+- Build before every push. Pull from `main` before starting work and before opening a pull request.
 - If Git reports a merge conflict, don't guess. Ask the person who wrote the other code.
-
-## Getting started
-1. Install Visual Studio with the ".NET desktop development" workload.
-2. Clone the repo (see above) and open `ProductRatingSystem.sln`.
-3. Build with Ctrl+Shift+B. It should say 0 errors.

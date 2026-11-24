@@ -57,11 +57,11 @@ namespace ProductRatingSystem.Boundary
             // titleLabel
             //
             titleLabel.BackColor = System.Drawing.Color.White;
-            titleLabel.Font = new System.Drawing.Font("Times New Roman", 28F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 0);
+            titleLabel.Font = new System.Drawing.Font("Times New Roman", 40F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 0);
             titleLabel.ForeColor = System.Drawing.Color.Black;
-            titleLabel.Location = new System.Drawing.Point(0, 90);
+            titleLabel.Location = new System.Drawing.Point(0, 55);
             titleLabel.Name = "titleLabel";
-            titleLabel.Size = new System.Drawing.Size(600, 100);
+            titleLabel.Size = new System.Drawing.Size(600, 140);
             titleLabel.TabIndex = 0;
             titleLabel.Text = "PRODUCT RATING\r\nSYSTEM";
             titleLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -69,11 +69,11 @@ namespace ProductRatingSystem.Boundary
             // subtitleLabel
             //
             subtitleLabel.BackColor = System.Drawing.Color.White;
-            subtitleLabel.Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
+            subtitleLabel.Font = new System.Drawing.Font("Segoe UI", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             subtitleLabel.ForeColor = System.Drawing.Color.Black;
-            subtitleLabel.Location = new System.Drawing.Point(0, 205);
+            subtitleLabel.Location = new System.Drawing.Point(0, 212);
             subtitleLabel.Name = "subtitleLabel";
-            subtitleLabel.Size = new System.Drawing.Size(600, 70);
+            subtitleLabel.Size = new System.Drawing.Size(600, 85);
             subtitleLabel.TabIndex = 1;
             subtitleLabel.Text = "Discover products and\r\nview customer ratings";
             subtitleLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;

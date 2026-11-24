@@ -48,7 +48,7 @@ namespace ProductRatingSystem.Boundary
             //
             // headerLabel
             //
-            headerLabel.BackColor = System.Drawing.Color.White;
+            headerLabel.BackColor = System.Drawing.Color.Gainsboro;
             headerLabel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             headerLabel.Font = new System.Drawing.Font("Segoe UI", 22F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             headerLabel.ForeColor = System.Drawing.Color.Black;
@@ -235,7 +235,8 @@ namespace ProductRatingSystem.Boundary
             ClientSize = new System.Drawing.Size(600, 780);
             Controls.Add(contentPanel);
             ForeColor = System.Drawing.Color.Black;
-            FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
+            FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            MaximizeBox = false;
             MinimumSize = new System.Drawing.Size(360, 300);
             MinimizeBox = false;
             Name = "AddProductForm";

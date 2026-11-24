@@ -198,8 +198,14 @@ namespace ProductRatingSystem.Boundary
         // When it is narrower, the page starts at the left and scrolls.
         private void centerContent()
         {
-            int left = Math.Max(0, (ClientSize.Width - contentPanel.Width) / 2);
-            contentPanel.Left = left + AutoScrollPosition.X;
+            int left = (ClientSize.Width - contentPanel.Width) / 2;
+            if (VerticalScroll.Visible)
+            {
+                // never let the page reach under the vertical scroll bar
+                left = Math.Min(left, ClientSize.Width - contentPanel.Width
+                    - SystemInformation.VerticalScrollBarWidth);
+            }
+            contentPanel.Left = Math.Max(0, left) + AutoScrollPosition.X;
         }
 
         // The page cannot be cancelled: closing by the user is blocked until
