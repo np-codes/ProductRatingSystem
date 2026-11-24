@@ -13,7 +13,7 @@ namespace ProductRatingSystem.Control
     // Associations: DBConnectorControl reads and writes the SQLite database and
     //               builds UserAccount, Product, ProductList, ProductRating and
     //               ReviewList objects from the rows.
-    public class DBConnectorControl
+    public class DBConnectorControl : Controller
     {
         private string connectionString;
 

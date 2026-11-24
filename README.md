@@ -70,7 +70,7 @@ the program.
 | Member | Name | Work |
 |---|---|---|
 | 1 | **Nisarg Patel** | **Database and Startup.** `DBConnectorControl` (SQLite tables, sample data, every database read/write), the Startup use case (`RatingSystem`, `StartupControl`, `StartupForm`), and keeping the project building. |
-| 2 | **Dean Thompson** | **Login, Logout and menus.** `LoginForm`, `LoginControl`, `LogoutControl`, and the Customer and Seller menus (`CustomerMenu`, `SellerMenu`, `MainMenu`) with the shared look (`ApplicationForm`, `UiTheme`). |
+| 2 | **Dean Thompson** | **Login, Logout and menus.** `LoginForm`, `LoginControl`, `LogoutControl`, and the Customer and Seller menus (`CustomerMenu`, `SellerMenu`, `MainMenu`) with the shared look (`ApplicationForm`). |
 | 3 | **Daniel Reed** | **Add Product and Rate Product.** `AddProductForm` / `AddProductControl` for sellers, `RatingForm` / `RateProductControl` for customers, the product cards (`ProductCard`) and showing reviews and overall ratings. |
 
 The `Entity` classes (`UserAccount`, `Product`, `ProductRating`, `ProductList`, `ReviewList`) are
@@ -92,7 +92,7 @@ The code follows the **Boundary – Control – Entity** pattern: forms (Boundar
 ## More documentation
 | File | Contents |
 |---|---|
-| `PROJECT_OVERVIEW.md` | Start here for details: every file and class, methods, database tables, how the program runs. |
+| `PROJECT_OVERVIEW.md` | Start here for details: every file and class, methods, database tables, how the program runs, and what was changed to match RAD_V5 (section 12). |
 | `Work_Explanation/MEMBER1_EXPLANATION.md` | Database, startup, final changes (Nisarg Patel). |
 | `Work_Explanation/MEMBER2_EXPLANATION.md` | Login, logout and menus (Dean Thompson). |
 | `Work_Explanation/MEMBER3_EXPLANATION.md` | Add Product and Rate Product (Daniel Reed). |
@@ -107,7 +107,10 @@ The code follows the **Boundary – Control – Entity** pattern: forms (Boundar
 - Parameters start with `m` (e.g. `muserID`), like the Entity classes.
 - In Boundary files write `LoginControl`, not `Control.LoginControl`.
 - New forms inherit from `ApplicationForm` (same 600 × 780 window) and style buttons with
-  `UiTheme.StyleSecondaryButton`. Do not set your own form size.
+  `StyleSecondaryButton` (from `ApplicationForm`). Black text on white, no exception text in messages.
+  Do not set your own form size.
+- Forms never call `DBConnectorControl`; only control classes do. Every control has its own `db` field
+  and inherits from the empty `Controller` class.
 - Don't change Entity classes or someone else's files without telling the team first.
 
 ### Git workflow

@@ -14,6 +14,7 @@ namespace ProductRatingSystem.Control
     public class RateProductControl : Controller
     {
         private int userID;
+        private DBConnectorControl db = new DBConnectorControl();
         private int productID;
 
         // Extra helper fields (not in the class diagram).
@@ -74,9 +75,10 @@ namespace ProductRatingSystem.Control
             {
                 db.saveReview(userID, productID, mrating, mreview.Trim(), DateTime.Now);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                ratingForm.displayError("The rating could not be saved: " + ex.Message);
+                // The details of the error are not shown to the user.
+                ratingForm.displayError("The rating could not be saved. Please try again.");
                 return;
             }
 
@@ -86,11 +88,12 @@ namespace ProductRatingSystem.Control
                 double average = calculateAverage(reviewList);
                 db.updateRating(productID, average);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // The rating itself is saved; only the average failed. The page is
-                // still closed so the same rating is not submitted twice.
-                MessageBox.Show("The rating was saved, but the overall rating could not be updated: " + ex.Message,
+                // still closed so the same rating is not submitted twice. The details
+                // of the error are not shown to the user.
+                MessageBox.Show("The rating was saved, but the overall rating could not be updated.",
                     "Rate Product", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
 
@@ -142,7 +145,7 @@ namespace ProductRatingSystem.Control
             return true;
         }
 
-        // Average of all valid star ratings in the list, rounded to 2 decimals.
+        // Exact average of all valid star ratings in the list (RAD Table 2.4.6).
         // Returns 0 when there are no ratings.
         private double calculateAverage(ReviewList mreviewList)
         {
@@ -167,7 +170,7 @@ namespace ProductRatingSystem.Control
             {
                 return 0.0;
             }
-            return Math.Round((double)total / count, 2);
+            return (double)total / count;
         }
 
         // Helper: finds a product by ID in a ProductList, or returns null.

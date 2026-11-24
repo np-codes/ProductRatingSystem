@@ -28,7 +28,7 @@ Member 1's part has two jobs.
 | Startup flow | `Main` shows `StartupForm`; the **Startup** button runs `StartupControl.initiate()`, which opens `LoginForm`. (Earlier versions opened an empty `Form1`.) |
 | App lifetime | One central rule in `RatingSystem`: the program ends when no visible form is left. |
 | Startup Page look | Title "PRODUCT RATING / SYSTEM" Times New Roman Bold **40 pt**; subtitle Segoe UI **20 pt** with extra space around it; three showcase product cards; **Startup** button in the shared outline-button style. `StartupForm` now inherits `ApplicationForm`. |
-| `StartupControl` | Now inherits `Controller` (gets the `db` field), opens `LoginForm` with `display()`. |
+| `StartupControl` | Inherits `Controller` (empty base class) and has its own `db` field; opens `LoginForm` with `display()`. |
 | Sample data | **6 users** (3 customers, 3 sellers) and 3 products. |
 | Images | `Images/` now holds `product1-3.png` (Startup Page) and `headphones.png`, `keyboard.png`, `charger.png` (sample products). |
 | `.csproj` | `Microsoft.Data.Sqlite 9.0.23`, `<None Update="Images\*.png">` (copy to output), `EnableWindowsTargeting` (added by a teammate). |
@@ -37,13 +37,33 @@ Member 1's part has two jobs.
 ### 2.2 Changes made to the whole interface (touching teammates' files)
 | Change | Files |
 |---|---|
-| **Same window size for every form**: 600 × 780 client area, fixed border, no maximize, centered. Set once in the base class; the menus and Login no longer set their own size. | `UiTheme.cs` (`FormClientSize`), `ApplicationForm.cs`, `CustomerMenu.cs`, `SellerMenu.cs`, `LoginForm.Designer.cs`, `AddProductForm.Designer.cs`, `RatingForm.Designer.cs` |
-| **Login page:** bigger Times New Roman title (two lines like the Startup Page), a blue user symbol under it, then Username, Password, Login, with space between the sections. | `LoginForm.Designer.cs`, `LoginForm.cs` |
+| **Same window size for every form**: 600 × 780 client area, fixed border, no maximize, centered. Set once in the base class; the menus and Login no longer set their own size. | `ApplicationForm.cs` (`FormClientSize`), `CustomerMenu.cs`, `SellerMenu.cs`, `LoginForm.Designer.cs`, `AddProductForm.Designer.cs`, `RatingForm.Designer.cs` |
+| **Login page:** bigger Times New Roman title (two lines like the Startup Page), a user symbol under it (black since the RAD change, section 2.3), then Username, Password, Login, with space between the sections. | `LoginForm.Designer.cs`, `LoginForm.cs` |
 | **Menus:** a boxed grey top bar with the user name on the left and the buttons on the right (Seller: `[Add Product] [Logout]`, Customer: `[Logout]`); a second boxed bar with the page title on the left and **Count** on the right; boxes line up with the product cards. The header code is shared in `MainMenu`. | `MainMenu.cs`, `SellerMenu.cs`, `CustomerMenu.cs`, `LoginForm.cs` (passes the customer's name) |
 | **Product card:** price in a box; the Overall Rating bar has the text on the left and the stars on the right. | `ProductCard.cs`, `ProductCard.Designer.cs` |
 | **Light-grey top bars** on the Add Product and Rate Product pages. | `AddProductForm.Designer.cs`, `RatingForm.Designer.cs` |
 | **Rate Product page:** a box around the Rating row (caption, 5 stars, "(not selected)"). | `RatingForm.Designer.cs` |
-| **One button style everywhere:** white rectangle, dark thin border, blue text. A focused or clicked button keeps the same 1 px border (Windows normally draws it thicker). | `UiTheme.cs` |
+| **One button style everywhere:** white rectangle, dark thin border, black text. A focused or clicked button keeps the same 1 px border (Windows normally draws it thicker). | `ApplicationForm.cs` (`StyleSecondaryButton`) |
+
+### 2.3 Changes made to match RAD_V5 (latest)
+The colours "grey top bars" and "blue text" above were later replaced: the design document asks for
+black text on a white background. The code was also changed to follow the RAD class diagrams and
+sequence diagrams. Full list: `PROJECT_OVERVIEW.md` section 12. In short:
+
+| Change | Files |
+|---|---|
+| `UiTheme` was merged into `ApplicationForm` (colours `TextColor`, `MutedTextColor`, `ButtonTextColor`..., fonts, `StyleSecondaryButton`) and **deleted**; all forms use `ApplicationForm.` instead of `UiTheme.`. Everything is white with black text. | `ApplicationForm.cs`, `UiTheme.cs` (deleted), all forms, `ProductCard.cs` |
+| `ApplicationForm` now has `display()` / `close()` for every form (`AddProductForm` and `RatingForm` override them). `StartupForm` lost its own copies. | `ApplicationForm.cs`, `StartupForm.cs`, `AddProductForm.cs`, `RatingForm.cs` |
+| `Controller` is now an **empty** base class; `DBConnectorControl : Controller`; every control (`StartupControl`, `LoginControl`, `LogoutControl`, `AddProductControl`, `RateProductControl`) has its own `private DBConnectorControl db`. | `Controller.cs`, `DBConnectorControl.cs`, the five controls |
+| Login: `LoginControl.submit()` + `validate()` (username ≤ 50, password ≤ 100, field-specific messages); the control opens the menu, `LoginForm.openMenu` was removed; `LoginForm.submit()` and `display(string)` added. | `LoginControl.cs`, `LoginForm.cs` |
+| Logout: `LogoutControl(MainMenu)`, closes the menu first, `clearSession()`, Login shows "You have been logged out." | `LogoutControl.cs`, `MainMenu.cs` |
+| Menus: `MainMenu` keeps `username` and `productList` private (accessors), has abstract `display(ProductList, string)`; `SellerMenu` no longer reads the database (`setReviews`; the controls load the reviews); `CustomerMenu.selectProduct()` has no parameter. | `MainMenu.cs`, `SellerMenu.cs`, `CustomerMenu.cs`, `AddProductControl.cs` |
+| Error messages never show exception text (Startup, Add Product, Rate Product). | `StartupForm.cs`, `AddProductControl.cs`, `RateProductControl.cs` |
+| The product's overall rating is stored as the exact average (no rounding). | `RateProductControl.cs` |
+| Removed unused `using` lines. | the five Entity files |
+
+**Not changed:** the Startup Page and **Startup** button (kept on purpose), the database tables and
+`DBConnectorControl` methods, the Entity logic.
 
 ---
 
@@ -65,12 +85,14 @@ class RatingSystem` in the root namespace.
 |---|---|---|---|
 | `private string configFile` | – | – | Path of `config.txt` next to the `.exe`. |
 | `private Dictionary<string,string> settings` | – | – | Helper: the `key=value` lines read from `config.txt` (nothing uses them yet). |
-| `StartupControl()` | none | – | Constructor. Sets `configFile`; the `db` field comes from `Controller`. |
+| `private DBConnectorControl db` | – | – | Its own database connector (`Controller` has no members). |
+| `StartupControl()` | none | – | Constructor. Sets `configFile`. |
 | `public void initiate()` | none | nothing | Called by `StartupForm`. Runs `loadConfiguration()`, `db.initializeDB()`, then `new LoginForm().display()`. It does not call `Application.Run` (the loop is already running) and does not catch errors: `StartupForm` shows them. |
 | `private void loadConfiguration()` | none | nothing | Reads `config.txt` if it exists (`key=value`, `#` = comment). A missing or unreadable file is ignored. Never throws. |
 
 ### 3.3 `ProductRatingSystem/Control/DBConnectorControl.cs`
-**What it is for:** all database access (SQLite via `Microsoft.Data.Sqlite`). Each method opens its
+**What it is for:** all database access (SQLite via `Microsoft.Data.Sqlite`). `public class
+DBConnectorControl : Controller`. Each method opens its
 own connection in a `using` block; every query uses parameters (`@name`), so user input cannot
 change the SQL.
 
@@ -108,8 +130,8 @@ cards (picture, `Zoom`, plus stars `★★★★☆`); **Startup** button. The p
 | Member | Returns | What it does |
 |---|---|---|
 | `StartupForm()` | – | Builds the page, styles the button, fills the three cards. |
-| `display()` / `close()` | `void` | `Show()` / `Close()`. |
-| `private void startup()` | `void` | Disables the button, calls `new StartupControl().initiate()`, then `close()`. On an exception: message box "The system could not be started: …", page stays open, button enabled again. |
+| `display()` / `close()` | `void` | Inherited from `ApplicationForm` (`Show()` / `Close()`). |
+| `private void startup()` | `void` | Disables the button, calls `new StartupControl().initiate()`, then `close()`. On an exception: message box "The system could not be started. Please close the program and try again." (no exception text), page stays open, button enabled again. |
 | `private void startupButton_Click(sender, e)` | `void` | Calls `startup()`. |
 | `private void showProduct(mpicture, mstars, mfileName, mrating)` | `void` | Fills one card. |
 | `private Image loadImage(mfileName)` | `Image` | Loads `Images/<file>` next to the `.exe`; grey picture if missing. |
@@ -181,12 +203,14 @@ outside 1–5 stays 0, a blank title becomes `null`), so `getRatings()` returns 
 `getReview()` is `null`.
 
 ### 4.4 Who calls `DBConnectorControl`, in order (final code)
-**Login – valid:** `LoginControl.login` → `getAccount` → `logSession(userID,"LOGIN")` →
-`LoginForm.openMenu` → `getProducts(userID)`.
+**Login – valid:** `LoginControl.submit` → `getAccount` → `logSession(userID,"LOGIN")` →
+`getProducts(userID)` (sellers: `getReviews(productID)` for each product) → the control opens the menu.
 **Login – invalid:** `getAccount` returns `null` → `logSession(username,"FAILED_LOGIN")`.
 **Logout:** `LogoutControl.logout(userID)` → `logSession(userID,"LOGOUT")`.
-**Seller page:** `SellerMenu.display` → `getReviews(productID)` for each product card.
-**Add Product:** `AddProductControl.submit` → `saveProduct(userID, product)` → `getProducts(userID)`.
+**Seller page:** the control that opens it (`LoginControl` or `AddProductControl`) calls
+`getReviews(productID)` for each product and hands the result over with `SellerMenu.setReviews`.
+**Add Product:** `AddProductControl.submit` → `saveProduct(userID, product)` → `getProducts(userID)` +
+`getReviews(...)`.
 **Rate Product:** `RateProductControl.rateProduct` → `getRatings(productID)` + `getProducts(userID)`;
 `submit` → `saveReview(...)` → `getReviews(productID)` → (average calculated in the control) →
 `updateRating(productID, average)` → `getProducts(userID)`.
@@ -198,9 +222,9 @@ outside 1–5 stays 0, a blank title becomes `null`), so `getRatings()` returns 
  (program start)  --->   RatingSystem.Main
  StartupForm      --->   StartupControl.initiate  --->  initializeDB()          --->  create tables
  (Startup button)                                                                     + sample data
- LoginForm        --->   LoginControl.login       --->  getAccount()            --->  USERACCOUNT
+ LoginForm        --->   LoginControl.submit      --->  getAccount()            --->  USERACCOUNT
                                                   --->  logSession(...)         --->  SESSIONLOG
- Menus            --->   (menu code)              --->  getProducts()/(userID)  --->  PRODUCT, PURCHASE
+                                                  --->  getProducts(userID)     --->  PRODUCT, PURCHASE
  AddProductForm   --->   AddProductControl        --->  saveProduct()           --->  PRODUCT
  RatingForm       --->   RateProductControl       --->  getRatings()                  (nothing saved)
                                                   --->  saveReview()            --->  PRODUCTRATING + PURCHASE
@@ -240,7 +264,8 @@ Passwords are stored only as a hash.
 ## 6. For teammates
 
 ### Public methods of `DBConnectorControl`
-Create it with `new DBConnectorControl()` (or inherit `Controller`, which has a ready `db`).
+Create it with `new DBConnectorControl()` in a control class (`private DBConnectorControl db = new
+DBConnectorControl();`). Forms never use it directly.
 
 | Method | Returns | Use it for |
 |---|---|---|
@@ -280,9 +305,11 @@ database. Only `.png` files are copied to the output folder.
 ### Form rules (every page looks the same)
 - Inherit from `ApplicationForm`. It sets the client size **600 × 780**, `FixedSingle` border, no
   maximize, `CenterScreen`. Do **not** set `Size`, `ClientSize` or `FormBorderStyle` yourself.
-- Style buttons with `UiTheme.StyleSecondaryButton(button)` (white, dark thin border, blue text).
+- Style buttons with `StyleSecondaryButton(button)` (white, dark thin border, black text).
   `StylePrimaryButton` gives the same look.
-- Use the colours and fonts from `UiTheme`; top bars use `UiTheme.HeaderBackground`.
+- Use the colours and fonts that `ApplicationForm` provides (`TextColor`, `BodyFont`, ...; top bars use
+  `HeaderBackground`). Everything is black text on white.
+- Show messages with fixed texts; never show `ex.Message` to the user.
 - To change windows: `Show()` the next form, then `Close()` the old one. No `Application.Exit()`
   is needed; `RatingSystem` ends the program when the last visible window closes (section 4.2).
 - Exception: `AddProductForm` and `RatingForm` shrink themselves only if the screen is smaller than

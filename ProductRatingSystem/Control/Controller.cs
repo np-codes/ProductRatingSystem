@@ -1,13 +1,9 @@
 namespace ProductRatingSystem.Control
 {
-    // Shared base for application controllers that need database access.
+    // Subsystem: Control
+    // Base class of all control classes, including DBConnectorControl
+    // (RAD Figures 4.1.3, 4.1.5 and 4.2.2). It is empty, as in the RAD.
     public abstract class Controller
     {
-        protected readonly DBConnectorControl db;
-
-        protected Controller()
-        {
-            db = new DBConnectorControl();
-        }
     }
 }

@@ -21,7 +21,11 @@ other members see `Work_Explanation/MEMBER2_EXPLANATION.md` and
 | **Seller** | See their own products with their overall rating and all reviews. **Add Product** (title, picture, description, price). Log out. |
 
 Every login, failed login and logout is written to a log table (`SESSIONLOG`). Passwords are never
-stored; only a SHA-256 hash is.
+stored; only a SHA-256 hash is. Logging in checks the size of both values (username at most 50,
+password at most 100 characters); after a logout the Login page shows "You have been logged out."
+
+The code follows the design document **RAD_V5** (class names, methods, order of the sequence
+diagrams). Section 12 lists what was aligned and what still differs.
 
 ### Technology
 - C# on **.NET 9** (`net9.0-windows`), **Windows Forms** for the screens.
@@ -71,16 +75,15 @@ ProductRatingSystem/                      (repository root)
     │   ├── ProductList.cs
     │   └── ReviewList.cs
     ├── Control/                          LOGIC classes (one per use case + database)
-    │   ├── Controller.cs                 Base class: gives a controller its DBConnectorControl
-    │   ├── DBConnectorControl.cs         The only class that talks to SQLite
+    │   ├── Controller.cs                 Empty base class of every control class
+    │   ├── DBConnectorControl.cs         The only class that talks to SQLite (a Controller)
     │   ├── StartupControl.cs             Startup use case
     │   ├── LoginControl.cs               Login use case
     │   ├── LogoutControl.cs              Logout use case
     │   ├── AddProductControl.cs          Add Product use case
     │   └── RateProductControl.cs         Rate Product use case
     ├── Boundary/                         SCREEN classes (Windows Forms)
-    │   ├── ApplicationForm.cs            Base form: same size, font and colours for every window
-    │   ├── UiTheme.cs                    Shared colours, fonts and button style
+    │   ├── ApplicationForm.cs            Base form: same window, display()/close(), shared colours, fonts, button style
     │   ├── StartupForm.cs / .Designer.cs / .resx
     │   ├── LoginForm.cs / .Designer.cs / .resx
     │   ├── MainMenu.cs                   Base class of the two menus (header, heading, logout)
@@ -127,18 +130,22 @@ RatingSystem.Main
  └─ StartupForm ──(button)──> StartupControl ──> DBConnectorControl.initializeDB()
                                    └─ LoginForm
                                         └─ LoginControl (created by LoginForm, gets the form)
-                                              ├─ DBConnectorControl  (every Controller has one: field "db")
-                                              └─ LoginForm.openMenu(account)
+                                              │   (every control has its own DBConnectorControl: field "db")
+                                              └─ after a valid login: closes the LoginForm and creates
                                                     ├─ SellerMenu ── ProductCard (one per product)
                                                     │      ├─ AddProductControl ── AddProductForm
-                                                    │      └─ LogoutControl ── new LoginForm
+                                                    │      └─ LogoutControl(menu) ── new LoginForm
                                                     └─ CustomerMenu ── ProductCard (one per product)
                                                            ├─ RateProductControl ── RatingForm
-                                                           └─ LogoutControl ── new LoginForm
+                                                           └─ LogoutControl(menu) ── new LoginForm
 ```
 
-A control passes **a method to call back** (an `Action<ProductList>`) when it finishes, so the menu
-can redraw its list: `new AddProductControl(list => display(list, username))`.
+No form talks to the database: only control classes create a `DBConnectorControl`.
+
+A control passes **a method to call back** when it finishes, so the menu can redraw its list:
+`new RateProductControl(list => display(list))` for customers and
+`new AddProductControl((list, reviews) => { setReviews(reviews); display(list, getUsername()); })`
+for sellers (the Seller Page also needs the reviews of every product).
 
 ---
 
@@ -150,22 +157,25 @@ can redraw its list: `new AddProductControl(list => display(list, username))`.
    `loadConfiguration()` → `DBConnectorControl.initializeDB()` (creates tables and, the first time,
    the sample users and products) → `new LoginForm().display()`. The Startup Page then closes.
    If the database cannot start, a message box appears and the Startup Page stays open.
-3. **Login:** `LoginForm.login()` → `LoginControl.login(username, password)`: checks the fields are
-   not empty, hashes the password (SHA-256, uppercase hex), asks the database. Wrong data → writes
-   `FAILED_LOGIN` to the log and shows "Invalid username or password." Right data → writes `LOGIN`
-   and `LoginForm.openMenu(account)` opens the **SellerMenu** or **CustomerMenu** and closes the
-   login page.
+3. **Login:** `LoginForm.login()` → `LoginForm.submit(username, password)` →
+   `LoginControl.submit(...)`: `validate` (username required, at most 50 characters; password
+   required, at most 100; the message names the field), hash the password (SHA-256, uppercase hex),
+   ask the database. Wrong data → writes `FAILED_LOGIN` to the log and shows "Invalid username or
+   password." (it never says which one was wrong). Right data → writes `LOGIN`, closes the login
+   page, loads the user's products (a seller also gets the reviews of those products), creates the
+   **SellerMenu** or **CustomerMenu** and calls its `display(productList, username)`.
 4. **Seller:** sees own products (picture, title, description, price, overall rating with stars,
    and a **Reviews (n)** button that opens the list of reviews). **Add Product** →
    `AddProductControl` opens `AddProductForm` (modal). On **Submit** the control validates, copies
-   the chosen picture to `Images/Products/` next to the `.exe`, saves the product, closes the form
-   and the list is redrawn.
+   the chosen picture to `Images/Products/` next to the `.exe`, saves the product, closes the form,
+   reloads the products and their reviews, and the Seller Page is redrawn.
 5. **Customer:** sees the products not rated yet. **Rate Product** → `RateProductControl` opens
    `RatingForm` (modal). The customer picks 1–5 stars and writes a review; on **Submit** the control
-   validates, saves the review, **calculates the new average**, stores it, closes the form and the
-   list is redrawn (the rated product disappears from the customer's list).
-6. **Logout:** `MainMenu.logout()` → `LogoutControl.logout(userID)` writes `LOGOUT`, shows a new
-   `LoginForm`, and the menu closes.
+   validates, saves the review, **calculates the exact new average**, stores it, closes the form and
+   the list is redrawn (the rated product disappears from the customer's list).
+6. **Logout:** `MainMenu.logout()` → `new LogoutControl(this).logout(userID)`: writes `LOGOUT`,
+   closes the menu, clears the session data, then shows a new `LoginForm` with the message
+   "You have been logged out."
 7. **Exit:** closing the last visible window ends the program (see `RatingSystem` below).
 
 The Add Product and Rating pages **cannot be cancelled**: closing them with the X shows a message
@@ -231,13 +241,11 @@ Field: `public ProductRating[] reviews`.
 ## 6. Control classes (`Control/`)
 
 ### `Controller` (abstract base class)
-Gives every control that needs the database its own `DBConnectorControl`.
+Empty base class of **all** control classes, including `DBConnectorControl` (RAD Fig 4.1.3). It has
+no members. Every control that needs the database has its own field
+`private DBConnectorControl db = new DBConnectorControl();`.
 
-| Member | Description |
-|---|---|
-| `protected readonly DBConnectorControl db` | Created in the constructor. Subclasses use `db.getAccount(...)` etc. |
-
-### `DBConnectorControl` – the database (only class that writes SQL)
+### `DBConnectorControl : Controller` – the database (only class that writes SQL)
 Uses SQLite. Each method opens its own connection inside a `using` block and uses **parameters**
 for every value (so typed text can never change the SQL). Foreign keys are on.
 
@@ -260,34 +268,39 @@ for every value (so typed text can never change the SQL). Foreign keys are on.
 ### `StartupControl : Controller` – Startup use case
 | Member | Description |
 |---|---|
+| `db` (field) | Its own `DBConnectorControl`. |
 | `configFile` (field) | `config.txt` next to the `.exe`. |
 | `settings` (field) | Helper: `key=value` lines read from `config.txt` (not used yet). |
 | `initiate()` | `loadConfiguration()` → `db.initializeDB()` → `new LoginForm().display()`. Does not catch errors (`StartupForm` shows them). |
 | `loadConfiguration()` (private) | Reads `config.txt` if it exists; a missing/broken file is ignored. |
 
-### `LoginControl : Controller` – Login use case
+### `LoginControl : Controller` – Login use case (RAD Fig 2.5.2, 2.5.3)
 | Member | Description |
 |---|---|
-| `loginForm` (field) | The form that created it (used to show errors and open the menu). |
+| `maxUsernameLength` = 50, `maxPasswordLength` = 100 (constants) | Used by `validate` and for the `MaxLength` of the two text boxes. |
+| `db`, `loginForm`, `errorMessage` (fields) | The database, the form that created it, and the last validation message. |
 | `LoginControl()`, `LoginControl(mloginForm)` | Constructors. |
-| `login(musername, mpassword)` → `UserAccount` | Checks both fields are filled, hashes the password, calls `getAccount`. **Failure:** logs `FAILED_LOGIN`, shows an error, returns `null`. **Success:** logs `LOGIN`, calls `loginForm.openMenu(account)`, returns the account. |
-| `loginError(mmessage)` (private) | Shows the message on the form and returns `null`. |
+| `submit(musername, mpassword)` → `void` | In the order of the sequence diagram: `validate` (invalid → `loginForm.displayError(message)`, stop) → hash → `db.getAccount` → if `null`: `db.logSession(username,"FAILED_LOGIN")` and `displayError("Invalid username or password.")`, stop → `db.logSession(userID,"LOGIN")` → `loginForm.close()` → `db.getProducts(userID)` → create `SellerMenu` (with its reviews) or `CustomerMenu` → `menu.userID = ...` → `menu.display(productList, username)`. |
+| `validate(musername, mpassword)` (private) → `bool` | Username required, at most 50 characters; password required, at most 100. The message names the field. |
+| `loadReviews(mproductList)` (private) | Reads the reviews of every product for the Seller Page (`Dictionary<int, ReviewList>`). |
 
 The hash must be exactly: `Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(password)))`.
 
-### `LogoutControl : Controller` – Logout use case
+### `LogoutControl : Controller` – Logout use case (RAD Fig 2.5.4)
 | Member | Description |
 |---|---|
-| `logout(muserID)` | Logs `LOGOUT` and shows a new `LoginForm`. |
-| `logout()` | Shows a new `LoginForm` only (not used by the menus). |
+| `LogoutControl(mmainMenu)` | The constructor takes the menu that is being logged out. |
+| `logout(muserID)` | `db.logSession(userID,"LOGOUT")` → `mainMenu.close()` → `clearSession()` → `new LoginForm().display("You have been logged out.")`. |
+| `clearSession()` (private) | Clears the menu's user data (`userID`, user name) and releases the menu. |
 
 ### `AddProductControl : Controller` – Add Product use case
 | Member | Description |
 |---|---|
-| Fields | `userID`, `addProductForm`, `showProducts` (callback), `errorMessage`; constant `maxImageBytes` = 5 MB. |
-| `AddProductControl(mshowProducts)` | Constructor. The callback receives the refreshed product list. |
+| Fields | `userID`, `db`, `addProductForm`, `showProducts` (callback), `errorMessage`; constant `maxImageBytes` = 5 MB. |
+| `AddProductControl(mshowProducts)` | Constructor. The callback is an `Action<ProductList, Dictionary<int, ReviewList>>`: it receives the refreshed product list and the reviews. |
 | `addProduct(muserID)` | Remembers the seller and opens `AddProductForm`. |
-| `submit(mproduct)` | Validates; copies the picture; saves with `db.saveProduct`; closes the form; reloads `db.getProducts(userID)` and calls the callback. On error shows the message and keeps the form open. |
+| `submit(mproduct)` | Validates; copies the picture; saves with `db.saveProduct`; closes the form; reloads `db.getProducts(userID)` and the reviews and calls the callback. On error shows the message and keeps the form open; a save error shows the fixed text "The product could not be saved. Please try again." (never exception text). |
+| `loadReviews(mproductList)` (private) | Reads the reviews of every product for the Seller Page. |
 | `validate(mproduct)` (private) | Title 1–100 chars; a picture chosen; description 1–1000 chars; price > 0, ≤ 1,000,000, at most 2 decimals. Sets `errorMessage` naming the field. |
 | `isImageFile(mpath)` (private) | File must be `.png/.jpg/.jpeg/.bmp/.gif`, exist, be ≤ 5 MB and open as a picture. |
 | `storeImage(mpath)` (private) | Copies the picture to `Images/Products/<random>.<ext>` next to the `.exe`; returns the relative path saved in the database. |
@@ -295,12 +308,12 @@ The hash must be exactly: `Convert.ToHexString(SHA256.HashData(Encoding.UTF8.Get
 ### `RateProductControl : Controller` – Rate Product use case
 | Member | Description |
 |---|---|
-| Fields | `userID`, `productID`, `ratingForm`, `showProducts` (callback), `errorMessage`; constant `maxReviewLength` = 1000. |
+| Fields | `userID`, `productID`, `db`, `ratingForm`, `showProducts` (callback), `errorMessage`; constant `maxReviewLength` = 1000. |
 | `RateProductControl(mshowProducts)` | Constructor. |
 | `rateProduct(muserID, mproductID)` | Gets the blank rating (`db.getRatings`), finds the product in the customer's unrated list, opens `RatingForm`. If the product is no longer available, shows a message. |
-| `submit(mrating, mreview)` | Validates; `db.saveReview`; `db.getReviews` → `calculateAverage` → `db.updateRating`; closes the form; reloads the customer's list and calls the callback. |
+| `submit(mrating, mreview)` | Validates; `db.saveReview`; `db.getReviews` → `calculateAverage` → `db.updateRating`; closes the form; reloads the customer's list and calls the callback. Errors show fixed texts only ("The rating could not be saved. Please try again."), never exception text. |
 | `validate(mrating, mreview)` (private) | Stars 1–5; review not blank, ≤ 1000 chars, no strange control characters. |
-| `calculateAverage(mreviewList)` (private) | Average of all valid ratings, rounded to 2 decimals (0 if none). |
+| `calculateAverage(mreviewList)` (private) | The **exact** average of all valid ratings (not rounded; 0 if none). The pages show it with 1 decimal. |
 | `findProduct(mproductList, mproductID)` (private) | Looks a product up by ID in a list. |
 
 ---
@@ -309,22 +322,24 @@ The hash must be exactly: `Convert.ToHexString(SHA256.HashData(Encoding.UTF8.Get
 
 ### Shared by all screens
 
-**`ApplicationForm : Form`** (abstract) – base of every window. Its constructor sets the default
-font and colours and the **standard window**: client size **600 × 780**, fixed border (no
+**`ApplicationForm : Form`** (abstract; the "Form" class of the RAD, which cannot be named `Form`) –
+base of every window. Its constructor sets the default font and colours and the **standard window**: client size **600 × 780**, fixed border (no
 resizing), no maximize button, centered on screen, 96-DPI scaling. When a window opens
 (`OnLoad` → `fitToScreen()`), it is shrunk to fit the screen if it is too big (for example at
 150% Windows display scaling the 780 px page becomes 1170 px tall): it then gets a scroll bar and
 stays centered. At 100% scaling, or when the window fits, nothing changes. A new form only has to
 inherit from `ApplicationForm`; it must not set its own size.
 
-**`UiTheme`** (static) – the look of the whole program.
+`ApplicationForm` also holds the look of the whole program as public statics (they used to be in a
+separate class `UiTheme`, which was moved here and deleted):
 
 | Member | Description |
 |---|---|
-| Colours | `WindowBackground` (light grey page), `Surface` (white), `Text`, `MutedText`, `Primary` (blue), `HeaderBackground` (light grey `Gainsboro`), `ButtonBorder` (dark slate), `Divider`, `HeaderDivider`, `PrimaryHover`, `PrimaryPressed`. |
+| `display()` / `close()` (virtual) | `Show()` / `Close()` for every form. `AddProductForm` and `RatingForm` override them (modal dialog; `close()` allows closing). |
+| Colours | **Black text on a white background** (RAD 2.2): `WindowBackground`, `Surface`, `HeaderBackground` (all white), `TextColor`, `MutedTextColor`, `ButtonTextColor` (all black), `ButtonBorder` (dark slate), `ButtonHoverBackground` / `ButtonPressedBackground` (light grey while the mouse is over / pressing a button). |
 | Fonts | `BodyFont` (Segoe UI 9.5), `HeadingFont` (Segoe UI Semibold 16), `UsernameFont` (Semibold 15), `CountFont` (Segoe UI 11), `ButtonFont` (Semibold 10). |
-| `FormClientSize` | 600 × 780, used by `ApplicationForm`. |
-| `StyleSecondaryButton(mbutton)` | **The** button look: white rectangle, thin dark border, blue text, hand cursor. It also repaints the border at 1 px when the button has focus (Windows would draw it thicker). |
+| `FormClientSize` | 600 × 780. |
+| `StyleSecondaryButton(mbutton)` | **The** button look: white rectangle, thin dark border, black text, hand cursor. It also repaints the border at 1 px when the button has focus (Windows would draw it thicker). |
 | `StylePrimaryButton(mbutton)` | Same look (kept so older calls still work). |
 
 ### `StartupForm : ApplicationForm` – first page
@@ -334,52 +349,60 @@ Title "PRODUCT RATING / SYSTEM" (Times New Roman Bold 40), subtitle, three showc
 
 | Method | Description |
 |---|---|
-| `StartupForm()` | Builds the page and fills the three cards. |
-| `display()` / `close()` | `Show()` / `Close()`. |
-| `startup()` (private) | Disables the button, calls `new StartupControl().initiate()`, then `close()`. On an error: message box, page stays open, button enabled again. |
+| `StartupForm()` | Builds the page and fills the three cards. `display()` / `close()` are inherited from `ApplicationForm`. |
+| `startup()` (private) | Disables the button, calls `new StartupControl().initiate()`, then `close()`. On an error: message box with the fixed text "The system could not be started. Please close the program and try again." (no exception text), page stays open, button enabled again. |
 | `showProduct(...)`, `loadImage(...)` (private) | Fill a card; load an image (grey placeholder if the file is missing). |
 | `startupButton_Click`, `startupForm_FormClosed` (private) | Event handlers (the second frees the pictures). |
 
 ### `LoginForm : ApplicationForm` – login page
-Big title, a blue user symbol, **Username**, **Password**, error text, **Login** button. `Enter`
-also logs in.
+Big title, a black user symbol, **Username**, **Password**, message text, **Login** button. `Enter`
+also logs in. It only collects the values and shows messages; `LoginControl` does everything else
+(including opening the menu).
 
 | Method | Description |
 |---|---|
-| `LoginForm()` | Builds the page, creates its `LoginControl(this)`. |
-| `display()` / `close()` | `Show()` / `Close()`. |
-| `login()` | Clears the error, disables the button, calls `loginControl.login(...)`. |
-| `displayError(mmessage)` | Shows the error text and puts the cursor in the right box. |
-| `openMenu(maccount)` | Loads the user's products and opens `SellerMenu` or `CustomerMenu` (passing `userID` and `username`), then closes the login page. |
+| `LoginForm()` | Builds the page, creates its `LoginControl(this)`, sets `MaxLength` 50 / 100 on the two text boxes. |
+| `username`, `password` (private fields) | Filled from the text boxes by `login()` (the password box is cleared after a failed attempt). |
+| `login()` | Clears the message, reads the text boxes, calls `submit(username, password)`. |
+| `submit(musername, mpassword)` | Calls `loginControl.submit(...)`. |
+| `displayError(mmessage)` | Shows the message and puts the cursor in the right box (username for username messages, otherwise password). |
+| `display(mmessage)` | Shows the page with a message (used after logout: "You have been logged out."). `display()` and `close()` are inherited. |
 | `userIconPanel_Paint`, `loginButton_Click`, `passwordTextBox_KeyDown` (private) | Draws the user symbol; button and Enter-key events. |
 
 ### `MainMenu : ApplicationForm` (abstract) – shared part of the two menus
-Fields: `userID`, `username`, `userLabel` (shows the name), `countLabel` (shows "Count: n").
+Fields: `userID` (public), `username` and `productList` (private), `userLabel` (shows the name),
+`countLabel` (shows "Count: n").
 
 | Method | Description |
 |---|---|
-| `logout()` | `new LogoutControl().logout(userID)`, then closes this menu. |
-| `createHeader(params Button[] mbuttons)` | Top **grey box** (thin border, space around it): user name on the left; the given buttons and **Logout** on the right. |
+| `getUsername()` / `setUsername(musername)` | Access to the private user name. |
+| `getProductList()` / `setProductList(...)` (protected) | The products being shown. |
+| `display(mproductList, musername)` (abstract) | Shows the page for the given products and user name. `close()` is inherited. |
+| `logout()` | `new LogoutControl(this).logout(userID)` (the control closes the menu and shows the Login page). |
+| `createHeader(params Button[] mbuttons)` | Top **white box** (thin border, space around it): user name on the left; the given buttons and **Logout** on the right. |
 | `createHeading(mtext)` | Second **white box**: page title on the left, product count on the right. |
 | `OnLoad` → `scaleForDisplay()` (private) | The menus are built in code, so Windows doesn't enlarge them with the display scaling by itself. This scales the window and the two top boxes once (does nothing at 100%, or if they were already scaled). |
 
 ### `SellerMenu : MainMenu` – Seller page
-Header `[Add Product] [Logout]`, heading "My Products", a scrolling list of `ProductCard`s.
+Header `[Add Product] [Logout]`, heading "My Products", a scrolling list of `ProductCard`s. It never
+reads the database: the control that opens it hands over the reviews.
 
 | Method | Description |
 |---|---|
 | `SellerMenu()` | Builds the page. |
-| `display(mproductList, musername)` | Shows the name, draws one card per product (with its reviews from `getReviews`), updates the count. Called again after a product is added. |
-| `addProduct()` | `new AddProductControl(list => display(list, username)).addProduct(userID)`. |
+| `setReviews(mreviews)` | Sets the reviews (`Dictionary<int, ReviewList>`, by product ID) shown with each product. |
+| `display(mproductList, musername)` (override) | Shows the name, draws one card per product (with its reviews), updates the count. Called again after a product is added. |
+| `addProduct()` | `new AddProductControl((list, reviews) => { setReviews(reviews); display(list, getUsername()); }).addProduct(userID)`. |
 
 ### `CustomerMenu : MainMenu` – Customer page
-Header `[Logout]`, heading "Available Products", list of cards with **Rate Product** buttons.
+Header `[Logout]`, heading "Unreviewed Product List" (RAD Figure 3.3.1), list of cards with **Rate Product** buttons.
 
 | Method | Description |
 |---|---|
 | `CustomerMenu()` | Builds the page. |
+| `display(mproductList, musername)` (override) | Sets the user name and calls `display(mproductList)`. |
 | `display(mproductList)` | Draws one card per unrated product, updates the count. Called again after a rating. |
-| `selectProduct(mproductID)` | Remembers the chosen product. |
+| `selectProduct()` | Makes the product whose **Rate Product** button was just pressed the selected one (the card click stores its ID, then calls `selectProduct()` and `rateProduct()`). |
 | `rateProduct()` | `new RateProductControl(list => display(list)).rateProduct(userID, selectedProductID)`. |
 
 ### `ProductCard : UserControl` – one product as a card
@@ -402,9 +425,9 @@ counter), **Price**, **Submit**.
 | Method | Description |
 |---|---|
 | `AddProductForm(mcontrol)` | Builds the page for the given control. |
-| `display()` | Shows it as a dialog (waits until it is closed). |
+| `display()` (override) | Shows it as a dialog (waits until it is closed). |
 | `submit()` | Reads the fields, builds a `Product`, calls `addProductControl.submit(product)`. |
-| `close()` | Allows closing and closes (called by the control after saving). |
+| `close()` (override) | Allows closing and closes (called by the control after saving). |
 | `displayError(mmessage)` | Message box + cursor in the field the message is about. |
 | Private | `parsePrice` (accepts `44.30`, `$44.30`, `1,044.30`), `focusField`, `chooseImage` (file dialog), `updateCharacterCount`, `centerContent`, and event handlers (`…_Load` shrinks the window only if the screen is too small; `…_FormClosing` blocks cancelling). |
 
@@ -417,7 +440,7 @@ Heading, product title/picture/description/price, a **Rating box** with five sta
 | `RatingForm(mcontrol, mproduct)` | Builds the page for one product. |
 | `display(mproductRating)` | Shows the page (modal) with the blank rating from the database. |
 | `submit()` | Calls `rateProductControl.submit(rating, review)`. |
-| `close()` | Allows closing and closes. |
+| `close()` (override) | Allows closing and closes. |
 | `displayError(mmessage)` | Message box + cursor in the star row or the review box. |
 | Private | `showProduct`, `showStars`, `selectRating`, `updateCharacterCount`, `centerContent`, and event handlers (`starButton_Click`, `starButton_KeyPress`, `…_Load`, `…_FormClosing`). |
 
@@ -437,7 +460,7 @@ Created by `DBConnectorControl.initializeDB()`. Timestamps are stored as text
 | Table | Columns | Written by | Read by |
 |---|---|---|---|
 | `USERACCOUNT` | `userID` PK auto, `username` unique, `passwordHash`, `role` (`Customer`/`Seller`) | `initializeDB` (sample users) | `getAccount`, `getProducts(muserID)`, `logSession(int…)` |
-| `PRODUCT` | `productID` PK auto, `title`, `image`, `description`, `price`, `overallRating` (default 0), `sellerID` FK→USERACCOUNT | `initializeDB`, `saveProduct`, `updateRating` | `getProducts()` / `getProducts(muserID)` |
+| `PRODUCT` | `productID` PK auto, `title`, `image`, `description`, `price`, `overallRating` (exact average, default 0), `sellerID` FK→USERACCOUNT | `initializeDB`, `saveProduct`, `updateRating` | `getProducts()` / `getProducts(muserID)` |
 | `PRODUCTRATING` | `ratingID` PK auto, `rating`, `review`, `timestamp`, `buyerID` FK→USERACCOUNT, `productID` FK→PRODUCT | `saveReview` | `getReviews` |
 | `PURCHASE` | `buyerID` FK, `productID` FK, `rated` (0/1); PK (`buyerID`,`productID`) | `saveReview` | `getProducts(muserID)` for customers |
 | `SESSIONLOG` | `sessionID` PK auto, `username`, `eventType` (`LOGIN`/`LOGOUT`/`FAILED_LOGIN`), `timestamp`, `userID` FK (NULL for failed logins) | both `logSession` methods | – (log only) |
@@ -455,25 +478,29 @@ Created by `DBConnectorControl.initializeDB()`. Timestamps are stored as text
 ## 9. Use cases – who calls what
 
 **Login – valid**
-`LoginForm.login()` → `LoginControl.login()` → `db.getAccount()` → `db.logSession(userID,"LOGIN")`
-→ `LoginForm.openMenu()` → `db.getProducts(userID)` → `SellerMenu/CustomerMenu.display(...)`.
+`LoginForm.login()` → `LoginForm.submit()` → `LoginControl.submit()` → `validate` → `db.getAccount()`
+→ `db.logSession(userID,"LOGIN")` → `LoginForm.close()` → `db.getProducts(userID)` (sellers: also
+`db.getReviews(productID)` for each product, then `SellerMenu.setReviews()`) → `new SellerMenu()` /
+`new CustomerMenu()` → `menu.display(productList, username)`.
 
 **Login – invalid**
-`LoginControl.login()` → `db.getAccount()` returns `null` → `db.logSession(username,"FAILED_LOGIN")`
-→ `LoginForm.displayError("Invalid username or password.")`.
+`LoginControl.submit()` → `validate` fails → `LoginForm.displayError("Username: …")` (names the
+field); or `db.getAccount()` returns `null` → `db.logSession(username,"FAILED_LOGIN")` →
+`LoginForm.displayError("Invalid username or password.")`.
 
 **Logout**
 `MainMenu.logout()` → `LogoutControl.logout(userID)` → `db.logSession(userID,"LOGOUT")` →
-`new LoginForm().display()`.
+`MainMenu.close()` → `clearSession()` → `new LoginForm().display("You have been logged out.")`.
 
 **Add Product**
 `SellerMenu.addProduct()` → `AddProductControl.addProduct()` → `AddProductForm.display()` →
 user presses Submit → `AddProductForm.submit()` → `AddProductControl.submit()` → `validate` →
-`storeImage` → `db.saveProduct()` → `AddProductForm.close()` → `db.getProducts(userID)` →
-`SellerMenu.display()`.
+`storeImage` → `db.saveProduct()` → `AddProductForm.close()` → `db.getProducts(userID)` +
+`db.getReviews(...)` → callback → `SellerMenu.setReviews()` + `SellerMenu.display()`.
 
 **Rate Product**
-`CustomerMenu.rateProduct()` → `RateProductControl.rateProduct()` → `db.getRatings()` +
+`CustomerMenu` (card click) → `selectProduct()` → `rateProduct()` → `RateProductControl.rateProduct()`
+→ `db.getRatings()` +
 `db.getProducts(userID)` → `RatingForm.display()` → Submit → `RatingForm.submit()` →
 `RateProductControl.submit()` → `validate` → `db.saveReview()` → `db.getReviews()` →
 `calculateAverage` → `db.updateRating()` → `RatingForm.close()` → `db.getProducts(userID)` →
@@ -488,13 +515,17 @@ user presses Submit → `AddProductForm.submit()` → `AddProductControl.submit(
   forms do this through `AutoScaleDimensions = 96 x 96` and `AutoScaleMode = Dpi` in
   `InitializeComponent()`; the menus (built in code) through `MainMenu.scaleForDisplay()`. A window
   that ends up bigger than the screen is shrunk to fit and scrolls (`ApplicationForm.fitToScreen()`).
-- **Colours:** light-grey page, white boxes with thin black borders, light-grey top bars
-  (`HeaderBackground`), blue text for actions.
-- **Buttons:** white rectangle, dark thin border, blue Segoe UI Semibold text (`UiTheme`).
+- **Colours:** **black text on a white background** everywhere (RAD 2.2); boxes and the two top bars
+  are white with thin dark borders. Only decoration is light grey: the borders of the Startup cards,
+  the placeholder when a picture file is missing, and the shade a button shows under the mouse.
+- **Buttons:** white rectangle, dark thin border, black Segoe UI Semibold text
+  (`ApplicationForm.StyleSecondaryButton`).
+- **Error messages:** validation messages name the field; the login error does not say which value
+  was wrong; no message ever shows exception text.
 - **Title font:** "PRODUCT RATING SYSTEM" is Times New Roman Bold 40 pt on both the Startup
   and Login pages.
 - **Adding a new form:** inherit from `ApplicationForm`, call
-  `UiTheme.StyleSecondaryButton(button)` for each button, do not set `Size`/`ClientSize`. A form
+  `StyleSecondaryButton(button)` for each button, do not set `Size`/`ClientSize`. A form
   made in the designer must keep the `AutoScaleDimensions`/`AutoScaleMode` lines in
   `InitializeComponent()`; a form built in code must scale itself like `MainMenu` does.
 
@@ -502,12 +533,37 @@ user presses Submit → `AddProductForm.submit()` → `AddProductControl.submit(
 
 ## 11. Known limits and ideas
 
-- `SellerMenu.display` and `LoginForm.openMenu` call `DBConnectorControl` directly instead of
-  going through a control class.
+- `ProductCard` (a designer-based `UserControl`) is the one class in `Boundary/` whose name does not
+  end in Form or Menu; `AddProductForm` and `RatingForm` also use its static helpers, so it was not
+  made a nested class of the menus.
+- `MainMenu.userID` is a public field (the RAD lists only the private `username` and `productList`).
+- The Startup Page with its **Startup** button is not in the RAD (which starts the system
+  without a page).
+- `DBConnectorControl.getProducts()` (no argument) exists as in the RAD but is not called: the
+  pages need the role-specific `getProducts(userID)`.
 - `config.txt` is read but no setting uses it yet.
-- `UiTheme.HeaderDivider`, `PrimaryHover`, `PrimaryPressed` and `LogoutControl.logout()` (no
-  argument) are currently unused.
 - Only `.png` files in `Images/` are copied to the output folder (add a `.jpg` rule to the
   `.csproj` to use JPEGs).
 - A customer can only rate a product once through the app (it leaves their list); the database
   itself does not forbid a second row.
+
+---
+
+## 12. Changes made to match RAD_V5
+
+| Area | Before | Now |
+|---|---|---|
+| Login | `LoginControl.login()` returned a `UserAccount`; `LoginForm.openMenu` opened the menu and read the database. | `LoginControl.submit()` + `validate()`; the control follows the sequence diagram and opens the menu. `LoginForm` has `username`, `password`, `submit()`, `display(string)`; `openMenu` is gone. Username ≤ 50, password ≤ 100 characters, field-specific messages. |
+| Logout | The Login page was shown first and the menu closed afterwards; no message. | `LogoutControl(MainMenu)`: log → `mainMenu.close()` → `clearSession()` → `LoginForm.display("You have been logged out.")`. The parameterless `logout()` was removed. |
+| Controller hierarchy | `Controller` owned a `DBConnectorControl`; `DBConnectorControl` had no base class. | `Controller` is empty; `DBConnectorControl : Controller`; each control has its own `db` field. |
+| Boundary design | `display()`/`close()` in each form; `MainMenu.username` public; `SellerMenu` and `LoginForm` used the database. | `display()`/`close()` in `ApplicationForm`; `MainMenu` has private `username`/`productList` and abstract `display(ProductList, string)`; `SellerMenu.setReviews()`; `CustomerMenu.selectProduct()` has no parameter. No form creates `DBConnectorControl`. |
+| Look (RAD 2.2) | Grey page, blue buttons and text. | Black text on white. `UiTheme` was merged into `ApplicationForm` and deleted. |
+| Messages | Four messages showed exception text. | Fixed friendly messages everywhere. |
+| Rate Product | Average rounded to 2 decimals. | Exact average stored (shown with 1 decimal). |
+| Clean-up | Unused `using` lines in the Entity files. | Removed. |
+
+**Still different from the RAD:** the Startup Page and button; `getProducts(userID)` instead of
+`getProducts()` after login; extra helpers the RAD does not list (`ApplicationForm`, `StartupForm`,
+`ProductCard`, constructors taking a control or form, `displayError`, `loadReviews`, `storeImage`,
+`findProduct`); names with three words (`AddProductControl`, `RateProductControl`,
+`DBConnectorControl`, `AddProductForm`); `Main()` instead of `main()`.

@@ -20,23 +20,13 @@ namespace ProductRatingSystem.Boundary
         public StartupForm()
         {
             InitializeComponent();
-            UiTheme.StylePrimaryButton(startupButton);
+            ApplicationForm.StylePrimaryButton(startupButton);
 
             showProduct(product1Picture, product1Stars, "product1.png", showcaseRating1);
             showProduct(product2Picture, product2Stars, "product2.png", showcaseRating2);
             showProduct(product3Picture, product3Stars, "product3.png", showcaseRating3);
 
             FormClosed += startupForm_FormClosed;
-        }
-
-        public void display()
-        {
-            Show();
-        }
-
-        public void close()
-        {
-            Close();
         }
 
         // Startup button: initialize the system and open the next form.
@@ -48,9 +38,10 @@ namespace ProductRatingSystem.Boundary
             {
                 new StartupControl().initiate();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                MessageBox.Show("The system could not be started:\n" + ex.Message,
+                // The details of the error are not shown to the user.
+                MessageBox.Show("The system could not be started. Please close the program and try again.",
                     "Product Rating System", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 startupButton.Enabled = true;
                 return;

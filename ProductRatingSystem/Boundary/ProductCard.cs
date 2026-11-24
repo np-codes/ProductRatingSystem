@@ -43,7 +43,7 @@ namespace ProductRatingSystem.Boundary
         public void displaySeller(Product mproduct, ReviewList mreviews)
         {
             showProduct(mproduct);
-            UiTheme.StyleSecondaryButton(reviewsButton);
+            ApplicationForm.StyleSecondaryButton(reviewsButton);
             reviewList = mreviews != null ? mreviews : new ReviewList(new ProductRating[0]);
 
             ratingLabel.Text = "Overall Rating: " + formatRating(product.getOverallRating());
@@ -60,7 +60,7 @@ namespace ProductRatingSystem.Boundary
         public void displayCustomer(Product mproduct)
         {
             showProduct(mproduct);
-            UiTheme.StylePrimaryButton(rateButton);
+            ApplicationForm.StylePrimaryButton(rateButton);
 
             ratingPanel.Visible = false;
             rateButton.Visible = true;

@@ -2,14 +2,19 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using ProductRatingSystem.Control;
+using ProductRatingSystem.Entity;
 
 namespace ProductRatingSystem.Boundary
 {
-    // Shared base for role-specific main menus.
+    // Subsystem: Boundary
+    // Shared base for role-specific main menus (RAD Figure 4.2.1: MainMenu).
     public abstract class MainMenu : ApplicationForm
     {
         public int userID;
-        public string username;
+
+        // RAD Figure 4.2.1: -username and -productList are private.
+        private string username;
+        private ProductList productList;
 
         // Shows the logged-in user's name in the header box.
         protected Label userLabel;
@@ -32,10 +37,37 @@ namespace ProductRatingSystem.Boundary
             username = "";
         }
 
+        // The user name shown in the header.
+        public string getUsername()
+        {
+            return username;
+        }
+
+        public void setUsername(string musername)
+        {
+            username = musername ?? "";
+        }
+
+        // The products shown on the page; kept by display() in the subclasses.
+        protected ProductList getProductList()
+        {
+            return productList;
+        }
+
+        protected void setProductList(ProductList mproductList)
+        {
+            productList = mproductList;
+        }
+
+        // Shows the page for the given products and user name (RAD Figure 4.2.1).
+        // close() is inherited from ApplicationForm.
+        public abstract void display(ProductList mproductList, string musername);
+
+        // The Logout button (RAD Figure 2.5.4). LogoutControl closes this menu
+        // and shows the Login page.
         public void logout()
         {
-            new LogoutControl().logout(userID);
-            Close();
+            new LogoutControl(this).logout(userID);
         }
 
         // Space around the two top boxes. The right side also leaves room for the
@@ -61,7 +93,7 @@ namespace ProductRatingSystem.Boundary
             Panel box = new Panel
             {
                 Dock = DockStyle.Fill,
-                BackColor = UiTheme.HeaderBackground,
+                BackColor = ApplicationForm.HeaderBackground,
                 BorderStyle = BorderStyle.FixedSingle
             };
 
@@ -69,8 +101,8 @@ namespace ProductRatingSystem.Boundary
             {
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleLeft,
-                Font = UiTheme.UsernameFont,
-                ForeColor = UiTheme.Text,
+                Font = ApplicationForm.UsernameFont,
+                ForeColor = ApplicationForm.TextColor,
                 AutoEllipsis = true,
                 Padding = new Padding(14, 0, 0, 0)
             };
@@ -89,7 +121,7 @@ namespace ProductRatingSystem.Boundary
             {
                 button.Size = new Size(120, 38);
                 button.Margin = new Padding(0, 11, 10, 11);
-                button.Font = UiTheme.ButtonFont;
+                button.Font = ApplicationForm.ButtonFont;
                 buttonPanel.Controls.Add(button);
             }
 
@@ -99,8 +131,8 @@ namespace ProductRatingSystem.Boundary
                 Size = new Size(96, 38),
                 Margin = new Padding(0, 11, 0, 11)
             };
-            UiTheme.StyleSecondaryButton(logoutButton);
-            logoutButton.Font = UiTheme.ButtonFont;
+            ApplicationForm.StyleSecondaryButton(logoutButton);
+            logoutButton.Font = ApplicationForm.ButtonFont;
             logoutButton.Click += (sender, e) => logout();
             buttonPanel.Controls.Add(logoutButton);
 
@@ -113,7 +145,7 @@ namespace ProductRatingSystem.Boundary
         }
 
         // Heading box under the header: a white box with a thin border. The page
-        // title is on the left ("My Products", "Available Products") and the
+        // title is on the left ("My Products", "Unreviewed Product List") and the
         // product count on the right.
         protected Panel createHeading(string mtext)
         {
@@ -127,7 +159,7 @@ namespace ProductRatingSystem.Boundary
             Panel box = new Panel
             {
                 Dock = DockStyle.Fill,
-                BackColor = UiTheme.Surface,
+                BackColor = ApplicationForm.Surface,
                 BorderStyle = BorderStyle.FixedSingle
             };
 
@@ -136,8 +168,8 @@ namespace ProductRatingSystem.Boundary
                 Text = mtext,
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleLeft,
-                Font = UiTheme.HeadingFont,
-                ForeColor = UiTheme.Text,
+                Font = ApplicationForm.HeadingFont,
+                ForeColor = ApplicationForm.TextColor,
                 Padding = new Padding(14, 0, 0, 0)
             };
 
@@ -147,8 +179,8 @@ namespace ProductRatingSystem.Boundary
                 Dock = DockStyle.Right,
                 Width = 140,
                 TextAlign = ContentAlignment.MiddleRight,
-                Font = UiTheme.CountFont,
-                ForeColor = UiTheme.MutedText,
+                Font = ApplicationForm.CountFont,
+                ForeColor = ApplicationForm.MutedTextColor,
                 Padding = new Padding(0, 0, 14, 0)
             };
 
@@ -198,8 +230,8 @@ namespace ProductRatingSystem.Boundary
             {
                 headingBox.Scale(scale);
             }
-            ClientSize = new Size((int)Math.Round(UiTheme.FormClientSize.Width * factor),
-                (int)Math.Round(UiTheme.FormClientSize.Height * factor));
+            ClientSize = new Size((int)Math.Round(ApplicationForm.FormClientSize.Width * factor),
+                (int)Math.Round(ApplicationForm.FormClientSize.Height * factor));
             // ApplicationForm then shrinks the window to the screen if it is too big.
         }
     }

@@ -48,7 +48,7 @@ namespace ProductRatingSystem.Boundary
             //
             // headerLabel
             //
-            headerLabel.BackColor = System.Drawing.Color.Gainsboro;
+            headerLabel.BackColor = System.Drawing.Color.White;
             headerLabel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             headerLabel.Font = new System.Drawing.Font("Segoe UI", 22F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
             headerLabel.ForeColor = System.Drawing.Color.Black;

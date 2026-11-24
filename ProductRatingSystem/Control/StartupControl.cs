@@ -11,6 +11,8 @@ namespace ProductRatingSystem.Control
     //               database and (later) creates the LoginForm.
     public class StartupControl : Controller
     {
+        private DBConnectorControl db = new DBConnectorControl();
+
         private string configFile;
         private Dictionary<string, string> settings;
 
